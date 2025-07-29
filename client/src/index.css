@@ -1,0 +1,9 @@
+body {
+  font-family: system-ui, sans-serif;
+  background: #f7f7f7;
+  margin: 0;
+}
+input,
+button {
+  outline: none;
+}
