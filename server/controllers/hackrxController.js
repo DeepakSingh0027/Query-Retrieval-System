@@ -2,6 +2,47 @@ const extractText = require("../utils/extractText");
 const chunkText = require("../utils/chunkText");
 const axios = require("axios");
 const selectRelevantChunks = require("../utils/selectRelevantChunks");
+const queryModel = require("../utils/queryModel");
+
+function splitIntoThreeParts(array) {
+  const total = array.length;
+  const partSize = Math.floor(total / 3);
+  const remainder = total % 3;
+
+  const result = [];
+
+  // First chunk
+  result.push(array.slice(0, partSize));
+
+  // Second chunk
+  result.push(array.slice(partSize, partSize * 2));
+
+  // Third chunk (includes remainder)
+  result.push(array.slice(partSize * 2));
+
+  return result;
+}
+
+async function processPart(questionsGroup, model, chunks) {
+  const allAnswers = [];
+
+  // Step 1: Collect all relevant chunks for the group of questions
+  const allRelevantChunks = selectRelevantChunks(chunks, questionsGroup, 30);
+  const context = allRelevantChunks.join("\n\n");
+
+  // Step 2: Send all questions together
+  const answerArray = await queryModel(model, context, questionsGroup);
+
+  // Step 3: Push all answers (they're already in an array)
+  if (Array.isArray(answerArray)) {
+    allAnswers.push(...answerArray);
+  } else {
+    // Fallback: push a single fallback answer
+    allAnswers.push("Failed to get structured answer.");
+  }
+
+  return allAnswers;
+}
 
 const hackrx = async (req, res) => {
   try {
@@ -19,67 +60,17 @@ const hackrx = async (req, res) => {
     // Step 2: Chunk the text (for better LLM processing)
     const chunks = chunkText(text);
 
-    // Step 3: Select only relevant chunks
-    const relevantChunks = selectRelevantChunks(chunks, questions, 30);
+    const [part1, part2, part3] = splitIntoThreeParts(questions, 3);
 
-    // Merge the relevant chunks
-    const context = relevantChunks.join("\n\n");
+    const [answers1, answers2, answers3] = await Promise.all([
+      processPart(part1, "qwen/qwen3-4b:free", chunks),
+      processPart(part2, "qwen/qwen3-8b:free", chunks),
+      processPart(part3, "qwen/qwen3-14b:free", chunks),
+    ]);
 
-    // Step 4: Construct the prompt and messages
-    const messages = [
-      {
-        role: "system",
-        content: `You are a helpful assistant that answers the user's questions based on the provided document. Only respond in the following strict JSON format:
+    const combinedAnswers = [...answers1, ...answers2, ...answers3];
 
-{
-  "answers": [
-    "Answer to question 1",
-    "Answer to question 2",
-    ...
-  ]
-}
-
-Answer ONLY from the given document. Do not make up any information. No extra text outside the JSON.`,
-      },
-      {
-        role: "user",
-        content: `Document:\n\n${context}\n\nQuestions:\n${questions.join(
-          "\n"
-        )}`,
-      },
-    ];
-
-    // Step 5: Make the API call to OpenRouter
-    const openRouterRes = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model: "qwen/qwen3-4b:free", // Replace with preferred model
-        messages,
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 30000,
-      }
-    );
-
-    const answerText = openRouterRes.data.choices[0].message.content;
-
-    // Try to parse the returned JSON if possible
-    let parsed;
-    try {
-      parsed = JSON.parse(answerText);
-    } catch (e) {
-      // Fallback if response is not valid JSON
-      return res.json({
-        raw: answerText,
-        warning: "Response was not valid JSON",
-      });
-    }
-
-    return res.json(parsed);
+    return res.json({ answers: combinedAnswers });
   } catch (err) {
     console.error(
       "HackRx controller error:",
