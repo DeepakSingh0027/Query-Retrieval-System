@@ -23,8 +23,7 @@ async function queryModel(context, questions) {
   ]
 }
 
-Make sure that each answer strictly corresponds to the matching numbered question.
-Answer ONLY from the given document. Do not make up any information. No extra text outside the JSON.`,
+Make sure that each answer strictly corresponds to the matching numbered question. No extra text outside the JSON.`,
       },
       {
         role: "user",

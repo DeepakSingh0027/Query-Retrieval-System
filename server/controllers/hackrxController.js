@@ -27,7 +27,7 @@ function splitQuestionsIntoFiveParts(questions) {
 async function processPart(questionsGroup, chunks) {
   const allAnswers = [];
 
-  const relevantChunks = selectRelevantChunks(chunks, questionsGroup, 7);
+  const relevantChunks = selectRelevantChunks(chunks, questionsGroup, 8);
   const context = relevantChunks.join("\n\n");
 
   const answerArray = await queryModel(context, questionsGroup);
