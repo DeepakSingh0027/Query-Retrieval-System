@@ -42,7 +42,7 @@ Make sure that each answer strictly corresponds to the matching numbered questio
       },
     });
 
-    console.log(response);
+    //console.log(response);
     if (isUnexpected(response)) {
       throw new Error(JSON.stringify(response.body));
     }

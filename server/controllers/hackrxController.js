@@ -51,6 +51,7 @@ export const hackrx = async (req, res) => {
       });
     }
 
+    console.log(questions);
     const text = await extractText(documents);
     const chunks = chunkText(text);
 
