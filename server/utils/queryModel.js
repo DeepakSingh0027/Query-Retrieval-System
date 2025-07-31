@@ -1,13 +1,11 @@
 const axios = require("axios");
 
-async function queryModel(model, context, questions) {
+async function queryModel(model, context, questions, key) {
   try {
     const messages = [
       {
         role: "system",
-        content: `You are given a list of questions and a document context. Answer each question based on the context.
-Return a JSON with an array called "answers" where the ith answer matches the ith question.
-Strictly keep the order. Only respond in the following strict JSON format:
+        content: `You are given a list of questions and a document context. Answer each question based on the context. Only respond in the following strict JSON format:
 
 {
   "answers": [
@@ -27,7 +25,14 @@ Answer ONLY from the given document. Do not make up any information. No extra te
           .join("\n")}`,
       },
     ];
-
+    let apii = "";
+    if (key === 1) {
+      apii = process.env.OPENROUTER_API_KEY1;
+    } else if (key === 2) {
+      apii = process.env.OPENROUTER_API_KEY2;
+    } else {
+      apii = process.env.OPENROUTER_API_KEY3;
+    }
     const response = await axios.post(
       "https://openrouter.ai/api/v1/chat/completions",
       {
@@ -36,7 +41,7 @@ Answer ONLY from the given document. Do not make up any information. No extra te
       },
       {
         headers: {
-          Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
+          Authorization: `Bearer ${apii}`,
           "Content-Type": "application/json",
         },
         timeout: 30000,

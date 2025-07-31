@@ -1,20 +1,32 @@
-function relevanceScore(chunk, questions) {
-  const loweredChunk = chunk.toLowerCase();
-  return questions.reduce((score, question) => {
-    const loweredQ = question.toLowerCase();
-    const qWords = loweredQ.split(/\W+/).filter((w) => w.length > 3);
-    return score + qWords.filter((word) => loweredChunk.includes(word)).length;
-  }, 0);
+function preprocessQuestions(questions) {
+  const questionWords = new Set();
+  for (const question of questions) {
+    for (const word of question.toLowerCase().split(/\W+/)) {
+      if (word.length > 3) questionWords.add(word);
+    }
+  }
+  return questionWords;
 }
 
-function selectRelevantChunks(chunks, questions, maxChunks = 10) {
-  const scoredChunks = chunks
-    .map((chunk) => ({
-      chunk,
-      score: relevanceScore(chunk, questions),
-    }))
-    .filter((entry) => entry.score > 0) // only keep relevant
-    .sort((a, b) => b.score - a.score); // sort descending
+function relevanceScore(chunk, questionWords) {
+  const loweredChunk = chunk.toLowerCase();
+  let score = 0;
+  for (const word of questionWords) {
+    if (loweredChunk.includes(word)) score++;
+  }
+  return score;
+}
+
+function selectRelevantChunks(chunks, questions, maxChunks) {
+  const questionWords = preprocessQuestions(questions);
+
+  const scoredChunks = [];
+  for (const chunk of chunks) {
+    const score = relevanceScore(chunk, questionWords);
+    if (score > 0) scoredChunks.push({ chunk, score });
+  }
+
+  scoredChunks.sort((a, b) => b.score - a.score);
 
   return scoredChunks.slice(0, maxChunks).map((entry) => entry.chunk);
 }

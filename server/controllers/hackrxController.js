@@ -23,7 +23,7 @@ function splitIntoThreeParts(array) {
   return result;
 }
 
-async function processPart(questionsGroup, model, chunks) {
+async function processPart(questionsGroup, model, chunks, key) {
   const allAnswers = [];
 
   // Step 1: Collect all relevant chunks for the group of questions
@@ -31,7 +31,7 @@ async function processPart(questionsGroup, model, chunks) {
   const context = allRelevantChunks.join("\n\n");
 
   // Step 2: Send all questions together
-  const answerArray = await queryModel(model, context, questionsGroup);
+  const answerArray = await queryModel(model, context, questionsGroup, key);
 
   // Step 3: Push all answers (they're already in an array)
   if (Array.isArray(answerArray)) {
@@ -63,13 +63,13 @@ const hackrx = async (req, res) => {
     const [part1, part2, part3] = splitIntoThreeParts(questions, 3);
 
     const [answers1, answers2, answers3] = await Promise.all([
-      processPart(part1, "qwen/qwen3-4b:free", chunks),
-      processPart(part2, "qwen/qwen3-8b:free", chunks),
-      processPart(part3, "qwen/qwen3-14b:free", chunks),
+      processPart(part1, "qwen/qwen3-4b:free", chunks, 1),
+      processPart(part2, "qwen/qwen3-4b:free", chunks, 2),
+      processPart(part3, "qwen/qwen3-4b:free", chunks, 3),
     ]);
 
     const combinedAnswers = [...answers1, ...answers2, ...answers3];
-
+    //OPENROUTER_API_KEY=
     return res.json({ answers: combinedAnswers });
   } catch (err) {
     console.error(

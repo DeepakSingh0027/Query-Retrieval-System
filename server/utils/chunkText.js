@@ -11,7 +11,6 @@ function chunkText(text, maxTokens = 500) {
     currentChunk += sentence + " ";
   }
   if (currentChunk) chunks.push(currentChunk.trim());
-
   return chunks;
 }
 
