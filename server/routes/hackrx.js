@@ -1,10 +1,9 @@
-const express = require("express");
-const router = express.Router();
-const authenticateToken = require("../middleware/auth");
+import express from "express";
+import authenticateToken from "../middleware/auth.js";
+import { hackrx } from "../controllers/hackrxController.js"; // If you exported it with `export const hackrx = ...`
 
-// 👇 Don't use destructuring here unless module.exports = { hackrx } was used
-const hackrx = require("../controllers/hackrxController");
+const router = express.Router();
 
 router.post("/hackrx/run", authenticateToken, hackrx);
 
-module.exports = router;
+export default router;

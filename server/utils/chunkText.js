@@ -1,4 +1,4 @@
-function chunkText(text, maxTokens = 500) {
+export function chunkText(text, maxTokens = 500) {
   const sentences = text.split(/(?<=[.?!])\s+/);
   let chunks = [];
   let currentChunk = "";
@@ -10,8 +10,7 @@ function chunkText(text, maxTokens = 500) {
     }
     currentChunk += sentence + " ";
   }
+
   if (currentChunk) chunks.push(currentChunk.trim());
   return chunks;
 }
-
-module.exports = chunkText;

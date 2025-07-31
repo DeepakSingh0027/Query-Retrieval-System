@@ -1,5 +1,5 @@
-const axios = require("axios");
-const pdfParse = require("pdf-parse");
+import axios from "axios";
+import pdfParse from "pdf-parse";
 
 const extractText = async (fileUrl) => {
   try {
@@ -17,4 +17,4 @@ const extractText = async (fileUrl) => {
   }
 };
 
-module.exports = extractText;
+export default extractText;

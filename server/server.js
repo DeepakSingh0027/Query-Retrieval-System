@@ -1,6 +1,8 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import hackrxRoutes from "./routes/hackrx.js"; // add `.js` extension for ES module
+
 dotenv.config();
 
 const app = express();
@@ -10,7 +12,6 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const hackrxRoutes = require("./routes/hackrx");
 app.use("/api/v1", hackrxRoutes);
 
 app.listen(PORT, () => {

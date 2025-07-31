@@ -1,4 +1,4 @@
-require("dotenv").config();
+import "dotenv/config";
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers?.authorization;
@@ -16,4 +16,5 @@ const authenticateToken = (req, res, next) => {
   next();
 };
 
-module.exports = authenticateToken;
+// ✅ ESM export
+export default authenticateToken;

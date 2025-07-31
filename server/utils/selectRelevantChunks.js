@@ -31,4 +31,5 @@ function selectRelevantChunks(chunks, questions, maxChunks) {
   return scoredChunks.slice(0, maxChunks).map((entry) => entry.chunk);
 }
 
-module.exports = selectRelevantChunks;
+// ✅ ESM export
+export { selectRelevantChunks };

@@ -1,6 +1,14 @@
-const axios = require("axios");
+import ModelClient, { isUnexpected } from "@azure-rest/ai-inference";
+import { AzureKeyCredential } from "@azure/core-auth";
+import "dotenv/config";
 
-async function queryModel(model, context, questions, key) {
+const endpoint = "https://models.github.ai/inference";
+const token = process.env.GITHUB_TOKEN;
+const model = "openai/gpt-4.1";
+
+const client = ModelClient(endpoint, new AzureKeyCredential(token));
+
+async function queryModel(context, questions) {
   try {
     const messages = [
       {
@@ -25,43 +33,34 @@ Answer ONLY from the given document. Do not make up any information. No extra te
           .join("\n")}`,
       },
     ];
-    let apii = "";
-    if (key === 1) {
-      apii = process.env.OPENROUTER_API_KEY1;
-    } else if (key === 2) {
-      apii = process.env.OPENROUTER_API_KEY2;
-    } else {
-      apii = process.env.OPENROUTER_API_KEY3;
-    }
-    const response = await axios.post(
-      "https://openrouter.ai/api/v1/chat/completions",
-      {
-        model,
+
+    const response = await client.path("/chat/completions").post({
+      body: {
         messages,
+        temperature: 0.7,
+        top_p: 1.0,
+        model: model,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${apii}`,
-          "Content-Type": "application/json",
-        },
-        timeout: 30000,
-      }
-    );
+    });
 
-    const answerText = response.data.choices[0].message.content;
+    console.log(response);
+    if (isUnexpected(response)) {
+      throw new Error(JSON.stringify(response.body));
+    }
 
-    // Extract the answers array from JSON response
+    const answerText = response.body.choices[0].message.content;
     const parsed = JSON.parse(answerText);
 
     if (Array.isArray(parsed.answers)) {
       return parsed.answers;
     } else {
       console.error("Invalid format from model:", parsed);
-      return questions.map(() => "No answer found."); // fallback
+      return questions.map(() => "No answer found.");
     }
   } catch (error) {
-    console.error("Error in queryModel:", error.message);
+    console.error("Error in queryModel:", error.message || error);
     return questions.map(() => "Error fetching answer.");
   }
 }
-module.exports = queryModel;
+
+export default queryModel;
