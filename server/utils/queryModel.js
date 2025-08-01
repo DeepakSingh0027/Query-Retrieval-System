@@ -3,12 +3,12 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import "dotenv/config";
 
 const endpoint = "https://models.github.ai/inference";
-const token = process.env.GITHUB_TOKEN;
-const model = "openai/gpt-4.1";
-
+let token = process.env.GITHUB_TOKEN;
+let model = "openai/gpt-4.1";
+let temperature = 0.7;
 const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
-async function queryModel(context, questions) {
+async function queryModel(context, questions, key) {
   try {
     const messages = [
       {
@@ -32,17 +32,30 @@ Make sure that each answer strictly corresponds to the matching numbered questio
           .join("\n")}`,
       },
     ];
-
+    if (key == 2) {
+      model = "openai/gpt-4o";
+    } else if (key == 3) {
+      model = "openai/gpt-4.1-mini";
+      token = process.env.GITHUB_TOKEN2;
+      temperature = 1.0;
+    } else if (key == 4) {
+      model = "openai/gpt-4.1-nano";
+      token = process.env.GITHUB_TOKEN2;
+      temperature = 1.0;
+    } else if (key == 5) {
+      model = "openai/gpt-4o-mini";
+      token = process.env.GITHUB_TOKEN2;
+      temperature = 1.0;
+    }
     const response = await client.path("/chat/completions").post({
       body: {
         messages,
-        temperature: 0.7,
+        temperature: temperature,
         top_p: 1.0,
         model: model,
       },
     });
 
-    //console.log(response);
     if (isUnexpected(response)) {
       throw new Error(JSON.stringify(response.body));
     }

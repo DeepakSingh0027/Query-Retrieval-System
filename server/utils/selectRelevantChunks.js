@@ -8,28 +8,36 @@ function preprocessQuestions(questions) {
   return questionWords;
 }
 
-function relevanceScore(chunk, questionWords) {
-  const loweredChunk = chunk.toLowerCase();
+function relevanceScore(chunkLower, questionWords) {
   let score = 0;
   for (const word of questionWords) {
-    if (loweredChunk.includes(word)) score++;
+    if (chunkLower.includes(word)) score++;
   }
   return score;
 }
 
-function selectRelevantChunks(chunks, questions, maxChunks) {
+function selectRelevantChunks(chunks, questions) {
   const questionWords = preprocessQuestions(questions);
 
   const scoredChunks = [];
   for (const chunk of chunks) {
-    const score = relevanceScore(chunk, questionWords);
-    if (score > 0) scoredChunks.push({ chunk, score });
+    const lowered = chunk.toLowerCase();
+    const score = relevanceScore(lowered, questionWords);
+    if (score > 0) scoredChunks.push({ chunk, lowered, score });
   }
 
   scoredChunks.sort((a, b) => b.score - a.score);
 
-  return scoredChunks.slice(0, maxChunks).map((entry) => entry.chunk);
+  const result = [];
+  let totalLength = 0;
+
+  for (const { chunk } of scoredChunks) {
+    if (totalLength + chunk.length >= 29999) break;
+    result.push(chunk);
+    totalLength += chunk.length;
+  }
+
+  return result;
 }
 
-// ✅ ESM export
 export { selectRelevantChunks };
