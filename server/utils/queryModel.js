@@ -5,7 +5,7 @@ import "dotenv/config";
 const endpoint = "https://models.github.ai/inference";
 let token = process.env.GITHUB_TOKEN;
 let model = "openai/gpt-4.1";
-let temperature = 0.7;
+let temperature = 1.0;
 const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
 async function queryModel(context, questions, key) {
@@ -33,19 +33,13 @@ Make sure that each answer strictly corresponds to the matching numbered questio
       },
     ];
     if (key == 2) {
-      model = "openai/gpt-4o";
+      token = process.env.GITHUB_TOKEN2;
     } else if (key == 3) {
-      model = "openai/gpt-4.1-mini";
-      token = process.env.GITHUB_TOKEN2;
-      temperature = 1.0;
+      token = process.env.GITHUB_TOKEN3;
     } else if (key == 4) {
-      model = "openai/gpt-4.1-nano";
-      token = process.env.GITHUB_TOKEN2;
-      temperature = 1.0;
+      token = process.env.GITHUB_TOKEN4;
     } else if (key == 5) {
-      model = "openai/gpt-4o-mini";
-      token = process.env.GITHUB_TOKEN2;
-      temperature = 1.0;
+      token = process.env.GITHUB_TOKEN5;
     }
     const response = await client.path("/chat/completions").post({
       body: {
