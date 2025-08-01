@@ -6,7 +6,6 @@ const endpoint = "https://models.github.ai/inference";
 let token = process.env.GITHUB_TOKEN;
 let model = "openai/gpt-4.1";
 let temperature = 1.0;
-const client = ModelClient(endpoint, new AzureKeyCredential(token));
 
 async function queryModel(context, questions, key) {
   try {
@@ -41,6 +40,7 @@ Make sure that each answer strictly corresponds to the matching numbered questio
     } else if (key == 5) {
       token = process.env.GITHUB_TOKEN5;
     }
+    const client = ModelClient(endpoint, new AzureKeyCredential(token));
     const response = await client.path("/chat/completions").post({
       body: {
         messages,
@@ -64,7 +64,7 @@ Make sure that each answer strictly corresponds to the matching numbered questio
       return questions.map(() => "No answer found.");
     }
   } catch (error) {
-    console.error("Error in queryModel:", error.message || error);
+    console.error("Error in queryModel:", key, ":  ".error.message || error);
     return questions.map(() => "Error fetching answer.");
   }
 }
