@@ -16,7 +16,7 @@ function relevanceScore(chunkLower, questionWords) {
   return score;
 }
 
-function selectRelevantChunks(chunks, questions, maxLength = 28999) {
+function selectRelevantChunks(chunks, questions, maxLength = 29699) {
   const questionWords = preprocessQuestions(questions);
 
   let scoredChunks = chunks.map((chunk) => {
