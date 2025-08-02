@@ -5,11 +5,6 @@ import "dotenv/config";
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
 const temperature = 1.0;
-const MAX_ATTEMPTS = 5;
-
-function delay(ms) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 function getTokenByKey(key) {
   switch (key) {
@@ -26,18 +21,18 @@ function getTokenByKey(key) {
   }
 }
 
-async function queryModel(context, questions, key = 1, attempt = 1) {
+async function queryModel(context, questions, key = 1) {
   const token = getTokenByKey(key);
 
   const messages = [
     {
       role: "system",
-      content: `You are a professional insurance policy assistant tasked with answering questions based strictly on the provided document context.
+      content: `You are a professional insurance policy assistant tasked with answering questions strictly based on the provided document context.
 
-Please follow these instructions:
-- For each question, respond only based on the context.
-- If the answer is not explicitly stated, respond with *whatever relevant you feel about that question* based on the document.
-- Return answers in the following strict JSON format only:
+Instructions:
+- Answer each question using only the document context.
+- If a direct answer is missing, respond with whatever relevant you feel about that question.
+- Format your response as JSON only:
 
 {
   "answers": [
@@ -47,7 +42,7 @@ Please follow these instructions:
   ]
 }
 
-Do not include any explanation, notes, or extra text outside this JSON structure.`,
+Do not include anything outside this JSON block.`,
     },
     {
       role: "user",
@@ -83,26 +78,7 @@ Do not include any explanation, notes, or extra text outside this JSON structure
     }
   } catch (err) {
     const errorMessage = err?.message || err.toString();
-
-    console.error(
-      `Error in queryModel (key=${key}, attempt=${attempt}):`,
-      errorMessage
-    );
-
-    const isRetryable =
-      errorMessage.includes("Too Many Requests") || // HTTP 429
-      errorMessage.includes("timeout") ||
-      errorMessage.includes("ECONNRESET") ||
-      errorMessage.includes("503") ||
-      errorMessage.includes("502");
-
-    if (isRetryable && attempt < MAX_ATTEMPTS) {
-      const backoff = 1000 * Math.pow(2, attempt - 1); // 1s, 2s, 4s, 8s, 16s
-      const jitter = Math.floor(Math.random() * 300); // random 0–300ms
-      await delay(backoff + jitter);
-      return queryModel(context, questions, key, attempt + 1);
-    }
-
+    console.error(`Query failed (key=${key}):`, errorMessage);
     return questions.map(() => "Error fetching answer.");
   }
 }
