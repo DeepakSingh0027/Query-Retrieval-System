@@ -69,6 +69,7 @@ export const hackrx = async (req, res) => {
         error: "Missing or invalid 'documents' or 'questions' array",
       });
     }
+    console.log("Total questions:", questions.length);
 
     // Step 1: Extract text and chunk it
     const text = await extractText(documents);
