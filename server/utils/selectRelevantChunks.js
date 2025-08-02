@@ -19,24 +19,30 @@ function relevanceScore(chunkLower, questionWords) {
 function selectRelevantChunks(chunks, questions, maxLength = 29999) {
   const questionWords = preprocessQuestions(questions);
 
-  // Step 1: Score and prepare each chunk
-  const scoredChunks = chunks
-    .map((chunk) => {
-      const lowered = chunk.toLowerCase();
-      const score = relevanceScore(lowered, questionWords);
-      const length = chunk.length;
-      return { chunk, lowered, score, length };
-    })
-    .filter((entry) => entry.score > 0); // keep only relevant
+  let scoredChunks = chunks.map((chunk) => {
+    const lowered = chunk.toLowerCase();
+    const score = relevanceScore(lowered, questionWords);
+    const length = chunk.length;
+    return { chunk, score, length };
+  });
 
-  // Step 2: Sort by descending relevance score
-  scoredChunks.sort((a, b) => b.score - a.score);
+  // Step 1: Filter relevant chunks
+  let relevantChunks = scoredChunks.filter((entry) => entry.score > 0);
 
-  // Step 3: Select chunks within character limit
+  // Step 2: Sort relevant chunks by score (high to low)
+  if (relevantChunks.length > 0) {
+    relevantChunks.sort((a, b) => b.score - a.score);
+  } else {
+    // No relevant chunks found, use fallback — original order or random
+    console.warn("No relevant chunks found. Using fallback chunks.");
+    relevantChunks = scoredChunks; // you can shuffle() here if needed
+  }
+
+  // Step 3: Accumulate chunks until maxLength is reached
   const result = [];
   let totalLength = 0;
 
-  for (const { chunk, length } of scoredChunks) {
+  for (const { chunk, length } of relevantChunks) {
     if (totalLength + length <= maxLength) {
       result.push(chunk);
       totalLength += length;
