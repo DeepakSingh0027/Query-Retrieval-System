@@ -19,6 +19,7 @@
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "mammoth": "^1.9.1",
+    "natural": "^8.1.0",
     "pdf-parse": "^1.1.1"
   }
 }

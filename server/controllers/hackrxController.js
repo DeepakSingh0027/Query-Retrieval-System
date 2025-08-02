@@ -45,7 +45,7 @@ async function processPart(questionsGroup, chunks, key) {
 
   try {
     console.log("Sends", key);
-    const answerArray = await queryModel(context, questionsGroup, key);
+    const answerArray = await queryModel(context, questionsGroup, key, 1);
     console.log("Received", key);
     if (Array.isArray(answerArray)) {
       return answerArray;
@@ -54,7 +54,7 @@ async function processPart(questionsGroup, chunks, key) {
       return questionsGroup.map(() => "Unexpected response format.");
     }
   } catch (err) {
-    console.error("Query Model failed:", err.message);
+    console.error(`Error in queryModel (key ${key}):`, error?.message || error);
     return questionsGroup.map(() => "Error in LLM response.");
   }
 }
