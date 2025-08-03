@@ -1,28 +1,31 @@
 import axios from "axios";
-import { getDocument } from "pdfjs-dist/legacy/build/pdf.js";
+import pdfParse from "pdf-parse";
 
 const extractText = async (fileUrl) => {
   try {
-    // 1. Download PDF from URL
     const response = await axios.get(fileUrl, {
       responseType: "arraybuffer",
     });
 
-    // 2. Load PDF document using pdfjs-dist
-    const pdf = await getDocument({ data: response.data }).promise;
+    // Suppress specific warning
+    const originalWarn = console.warn;
+    console.warn = function (...args) {
+      if (
+        args[0] &&
+        typeof args[0] === "string" &&
+        args[0].includes("Ran out of space in font private use area")
+      ) {
+        return; // skip this warning
+      }
+      originalWarn.apply(console, args);
+    };
 
-    let fullText = "";
+    const data = await pdfParse(response.data);
 
-    // 3. Loop through all pages and extract text
-    for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const content = await page.getTextContent();
+    // Restore original console.warn
+    console.warn = originalWarn;
 
-      const strings = content.items.map((item) => item.str).join(" ");
-      fullText += strings + "\n";
-    }
-
-    return fullText.trim();
+    return data.text;
   } catch (error) {
     console.error("Error in extractText:", error.message);
     throw new Error("Failed to extract text: " + error.message);

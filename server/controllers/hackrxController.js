@@ -54,7 +54,7 @@ async function processPart(questionsGroup, chunks, key) {
       return questionsGroup.map(() => "Unexpected response format.");
     }
   } catch (err) {
-    console.error(`Error in queryModel (key ${key}):`, error?.message || error);
+    console.error(`Error in queryModel (key ${key}):`, err?.message || err);
     return questionsGroup.map(() => "Error in LLM response.");
   }
 }
