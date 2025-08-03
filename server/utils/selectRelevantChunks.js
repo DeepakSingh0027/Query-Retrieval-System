@@ -1,44 +1,122 @@
-function preprocessQuestions(questions) {
-  const questionWords = new Set();
+function preprocessQuestions(questions, minWordLength = 4) {
+  const stopWords = new Set([
+    "the",
+    "and",
+    "for",
+    "that",
+    "with",
+    "this",
+    "have",
+    "from",
+    "you",
+    "your",
+    "but",
+    "not",
+    "are",
+    "was",
+    "what",
+    "when",
+    "which",
+    "will",
+    "they",
+    "them",
+    "been",
+    "their",
+    "how",
+    "would",
+    "can",
+    "there",
+    "why",
+    "these",
+    "could",
+    "into",
+    "then",
+    "than",
+    "more",
+    "also",
+    "some",
+    "like",
+  ]);
+
+  const wordSet = new Set();
+
   for (const question of questions) {
-    for (const word of question.toLowerCase().split(/\W+/)) {
-      if (word.length > 3) questionWords.add(word);
+    const words = question
+      .toLowerCase()
+      .replace(/[^\w\s]/g, "") // Remove punctuation
+      .split(/\s+/);
+
+    for (const word of words) {
+      if (word.length >= minWordLength && !stopWords.has(word)) {
+        wordSet.add(word);
+      }
     }
   }
-  return questionWords;
+
+  return wordSet;
 }
 
-function relevanceScore(chunkLower, questionWords) {
+function relevanceScore(chunk, questionWords) {
+  const normalized = chunk.toLowerCase().replace(/[^\w\s]/g, "");
+  const wordsInChunk = new Set(normalized.split(/\s+/));
+
   let score = 0;
-  for (const word of questionWords) {
-    if (chunkLower.includes(word)) score++;
+
+  for (const qWord of questionWords) {
+    for (const cWord of wordsInChunk) {
+      // Exact match or prefix match (e.g., "compute" in "computing")
+      if (cWord === qWord || cWord.startsWith(qWord)) {
+        score++;
+        break;
+      }
+    }
   }
+
   return score;
 }
 
-function selectRelevantChunks(chunks, questions, maxLength = 29699) {
-  const questionWords = preprocessQuestions(questions);
+function trimChunkSmart(chunk, maxLength) {
+  if (chunk.length <= maxLength) return chunk;
 
-  let scoredChunks = chunks.map((chunk) => {
-    const lowered = chunk.toLowerCase();
-    const score = relevanceScore(lowered, questionWords);
-    const length = chunk.length;
-    return { chunk, score, length };
-  });
+  // Try to trim at last sentence-ending punctuation before limit
+  const trimmed = chunk.slice(0, maxLength);
+  const lastPunct = trimmed.lastIndexOf(".");
+  if (lastPunct > maxLength * 0.7) return trimmed.slice(0, lastPunct + 1);
 
-  // Step 1: Filter relevant chunks
+  const lastSpace = trimmed.lastIndexOf(" ");
+  return lastSpace > 0 ? trimmed.slice(0, lastSpace) + "..." : trimmed;
+}
+
+function selectRelevantChunks(chunks, questions, options = {}) {
+  const {
+    maxLength = 29699,
+    minWordLength = 4,
+    minChunkLength = 100,
+    maxChunkLength = 10000,
+  } = options;
+
+  const questionWords = preprocessQuestions(questions, minWordLength);
+
+  // Prefilter too-short or too-long chunks
+  const validChunks = chunks.filter(
+    (c) => c.length >= minChunkLength && c.length <= maxChunkLength
+  );
+
+  const scoredChunks = validChunks.map((chunk) => ({
+    chunk,
+    score: relevanceScore(chunk, questionWords),
+    length: chunk.length,
+  }));
+
   let relevantChunks = scoredChunks.filter((entry) => entry.score > 0);
 
-  // Step 2: Sort relevant chunks by score (high to low)
-  if (relevantChunks.length > 0) {
-    relevantChunks.sort((a, b) => b.score - a.score);
+  if (relevantChunks.length === 0) {
+    console.warn("No relevant chunks found. Using fallback.");
+    relevantChunks = scoredChunks;
   } else {
-    // No relevant chunks found, use fallback — original order or random
-    console.warn("No relevant chunks found. Using fallback chunks.");
-    relevantChunks = scoredChunks; // you can shuffle() here if needed
+    relevantChunks.sort((a, b) => b.score - a.score);
   }
 
-  // Step 3: Accumulate chunks until maxLength is reached
   const result = [];
   let totalLength = 0;
 
@@ -48,9 +126,9 @@ function selectRelevantChunks(chunks, questions, maxLength = 29699) {
       totalLength += length;
     } else {
       const remaining = maxLength - totalLength;
-      if (remaining > 0) {
-        const trimmed = chunk.slice(0, remaining);
-        result.push(trimmed);
+      if (remaining > 50) {
+        const smartTrimmed = trimChunkSmart(chunk, remaining);
+        result.push(smartTrimmed);
       }
       break;
     }

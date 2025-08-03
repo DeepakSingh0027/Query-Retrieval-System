@@ -4,7 +4,7 @@ import "dotenv/config";
 
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
-const temperature = 0.3;
+const temperature = 0.7;
 
 function getTokenByKey(key) {
   switch (key) {
