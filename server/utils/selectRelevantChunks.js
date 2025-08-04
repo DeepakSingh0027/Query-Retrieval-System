@@ -219,7 +219,7 @@ function addChunksToResult(chunks, result, totalLength, maxLength) {
 
 function selectRelevantChunks(chunks, questions, options = {}) {
   const {
-    maxLength = 28499,
+    maxLength = 29499,
     minWordLength = 4,
     minChunkLength = 10,
     maxChunkLength = 10000,
