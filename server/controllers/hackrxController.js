@@ -1,4 +1,4 @@
-import extractText from "../utils/extractText.js";
+import extractCleanText from "../utils/extractText.js";
 import { chunkText } from "../utils/chunkText.js";
 import { selectRelevantChunks } from "../utils/selectRelevantChunks.js";
 import queryModel from "../utils/queryModel.js";
@@ -77,7 +77,7 @@ export const hackrx = async (req, res) => {
     console.log("Total questions:", questions.length);
 
     // Step 1: Extract text and chunk it
-    const text = await extractText(documents);
+    const text = await extractCleanText(documents);
     const chunks = chunkText(text);
 
     // Step 2: Divide questions into 5 logical batches
