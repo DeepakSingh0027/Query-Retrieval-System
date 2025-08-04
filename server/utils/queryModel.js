@@ -33,8 +33,9 @@ async function queryModel(context, questions, key = 1) {
 
 Instructions:
 - Answer each question using only the document context.
-- If a direct answer is missing, respond with whatever relevant you feel about that question.
-- Format your response as JSON only:
+- If the document does not provide a direct answer, respond with any partially relevant or inferred information from the context. Do not hallucinate or assume facts not present in the document.
+- Ensure that the nth question has the nth answer in the output.
+- Format your response strictly as valid JSON:
 
 {
   "answers": [
@@ -44,7 +45,8 @@ Instructions:
   ]
 }
 
-Do not include anything outside this JSON block.`,
+Do not include anything outside this JSON block. Your output must only be this JSON object.
+`,
     },
     {
       role: "user",

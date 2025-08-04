@@ -150,45 +150,6 @@ function preprocessQuestions(questions, minWordLength = 4) {
     "procedures",
     "treatment",
     "treatments",
-
-    // Words not adding context
-    "age",
-    "plan",
-    "plans",
-    "benefit",
-    "benefits",
-    "holder",
-    "holder’s",
-    "policyholder",
-    "insured",
-    "company",
-    "insurer",
-    "premium",
-    "document",
-    "claim",
-    "settlement",
-    "refund",
-    "hospital",
-    "procedure",
-    "day",
-    "care",
-    "checkup",
-    "checkups",
-    "donor",
-    "coverage",
-    "hospitalization",
-    "discount",
-    "renewal",
-    "renew",
-    "cancel",
-    "cancellation",
-    "floater",
-    "maternity",
-    "co-payment",
-    "illness",
-    "critical",
-    "ambulance",
-    "domiciliary",
   ]);
 
   const wordSet = new Set();
@@ -240,6 +201,23 @@ function trimChunkSmart(chunk, maxLength) {
   return lastSpace > 0 ? trimmed.slice(0, lastSpace) + "..." : trimmed;
 }
 
+function addChunksToResult(chunks, result, totalLength, maxLength) {
+  for (const { chunk, length } of chunks) {
+    if (totalLength + length <= maxLength) {
+      result.push(chunk);
+      totalLength += length;
+    } else {
+      const remaining = maxLength - totalLength;
+      if (remaining > 50) {
+        const smartTrimmed = trimChunkSmart(chunk, remaining);
+        result.push(smartTrimmed);
+      }
+      break;
+    }
+  }
+  return totalLength;
+}
+
 function selectRelevantChunks(chunks, questions, options = {}) {
   const {
     maxLength = 29899,
@@ -250,7 +228,6 @@ function selectRelevantChunks(chunks, questions, options = {}) {
 
   const questionWords = preprocessQuestions(questions, minWordLength);
 
-  // Prefilter too-short or too-long chunks
   const validChunks = chunks.filter(
     (c) => c.length >= minChunkLength && c.length <= maxChunkLength
   );
@@ -273,18 +250,21 @@ function selectRelevantChunks(chunks, questions, options = {}) {
   const result = [];
   let totalLength = 0;
 
-  for (const { chunk, length } of relevantChunks) {
-    if (totalLength + length <= maxLength) {
-      result.push(chunk);
-      totalLength += length;
-    } else {
-      const remaining = maxLength - totalLength;
-      if (remaining > 50) {
-        const smartTrimmed = trimChunkSmart(chunk, remaining);
-        result.push(smartTrimmed);
-      }
-      break;
-    }
+  totalLength = addChunksToResult(
+    relevantChunks,
+    result,
+    totalLength,
+    maxLength
+  );
+
+  // Add more text from unused chunks if length is still low
+  if (totalLength < maxLength) {
+    const usedChunks = new Set(result);
+    const nonRelevantChunks = scoredChunks
+      .filter((entry) => !usedChunks.has(entry.chunk))
+      .sort(() => Math.random() - 0.5);
+
+    addChunksToResult(nonRelevantChunks, result, totalLength, maxLength);
   }
 
   return result;
