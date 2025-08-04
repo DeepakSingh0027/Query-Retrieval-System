@@ -1,35 +1,29 @@
-import axios from "axios";
-import pdfParse from "pdf-parse";
+import fs from "fs/promises";
+import pdf from "pdf-parse";
 
-const extractText = async (fileUrl) => {
-  try {
-    const response = await axios.get(fileUrl, {
-      responseType: "arraybuffer",
-    });
-
-    // Suppress specific warning
-    const originalWarn = console.warn;
-    console.warn = function (...args) {
-      if (
-        args[0] &&
-        typeof args[0] === "string" &&
-        args[0].includes("Ran out of space in font private use area")
-      ) {
-        return; // skip this warning
-      }
-      originalWarn.apply(console, args);
-    };
-
-    const data = await pdfParse(response.data);
-
-    // Restore original console.warn
-    console.warn = originalWarn;
-
-    return data.text;
-  } catch (error) {
-    console.error("Error in extractText:", error.message);
-    throw new Error("Failed to extract text: " + error.message);
-  }
+// Helper to check if a page contains meaningful text
+const isMeaningful = (text) => {
+  const cleaned = text.replace(/\s+/g, ""); // remove all spaces, tabs, newlines
+  const isMostlySymbols = /^[^a-zA-Z0-9]{5,}$/.test(cleaned);
+  return cleaned.length > 10 && !isMostlySymbols;
 };
 
-export default extractText;
+const extractCleanText = async (filePath) => {
+  const dataBuffer = await fs.readFile(filePath);
+
+  const options = {
+    pagerender: (pageData) => {
+      // Extract raw text from the page
+      const text = pageData.getTextContent().then((content) => {
+        const pageText = content.items.map((item) => item.str).join(" ");
+        return isMeaningful(pageText) ? pageText : ""; // Skip blank/noisy pages
+      });
+      return text;
+    },
+  };
+
+  const data = await pdf(dataBuffer, options);
+  return data.text.trim(); // Final clean output
+};
+
+export default extractCleanText;

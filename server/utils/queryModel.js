@@ -4,7 +4,7 @@ import "dotenv/config";
 
 const endpoint = "https://models.github.ai/inference";
 const model = "openai/gpt-4.1";
-const temperature = 0.7;
+const temperature = 0.5; // Adjusted temperature for more balanced responses
 
 function getTokenByKey(key) {
   switch (key) {
@@ -16,6 +16,8 @@ function getTokenByKey(key) {
       return process.env.GITHUB_TOKEN4;
     case 5:
       return process.env.GITHUB_TOKEN5;
+    case 6:
+      return process.env.GITHUB_TOKEN6;
     default:
       return process.env.GITHUB_TOKEN;
   }
@@ -58,7 +60,7 @@ Do not include anything outside this JSON block.`,
       body: {
         messages,
         temperature,
-        top_p: 1.0,
+        top_p: 0.9,
         model,
       },
     });

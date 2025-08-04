@@ -3,6 +3,10 @@ import { chunkText } from "../utils/chunkText.js";
 import { selectRelevantChunks } from "../utils/selectRelevantChunks.js";
 import queryModel from "../utils/queryModel.js";
 
+function delay(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 // Generic question splitter
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
@@ -26,15 +30,16 @@ function splitQuestionsIntoParts(questions, parts) {
 
 // Preprocess and batch questions
 async function preProcessParts(questionsGroup, chunks, key) {
-  const splitter = 2; // early groups get smaller splits
+  const splitter = 3; // early groups get smaller splits
   const questionParts = splitQuestionsIntoParts(questionsGroup, splitter);
+  const results = [];
+  for (let part of questionParts) {
+    const res = await processPart(part, chunks, key);
+    results.push(...res);
+    await delay(7000); // wait for 6 second before next request
+  }
 
-  const partPromises = questionParts.map((part) =>
-    processPart(part, chunks, key)
-  );
-
-  const resultArrays = await Promise.all(partPromises);
-  return resultArrays.flat();
+  return results;
 }
 
 // Process one group of questions with relevant chunks
@@ -76,7 +81,7 @@ export const hackrx = async (req, res) => {
     const chunks = chunkText(text);
 
     // Step 2: Divide questions into 5 logical batches
-    const questionGroups = splitQuestionsIntoParts(questions, 5);
+    const questionGroups = splitQuestionsIntoParts(questions, 6);
 
     // Step 3: Run all batches in parallel
     const answerPromises = questionGroups.map((group, idx) =>

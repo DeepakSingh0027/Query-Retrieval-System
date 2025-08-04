@@ -89,7 +89,7 @@ function trimChunkSmart(chunk, maxLength) {
 
 function selectRelevantChunks(chunks, questions, options = {}) {
   const {
-    maxLength = 29699,
+    maxLength = 29899,
     minWordLength = 4,
     minChunkLength = 100,
     maxChunkLength = 10000,
