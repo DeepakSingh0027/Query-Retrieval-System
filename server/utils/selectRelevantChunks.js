@@ -157,7 +157,7 @@ function preprocessQuestions(questions, minWordLength = 4) {
   for (const question of questions) {
     const words = question
       .toLowerCase()
-      .replace(/[^\w\s]/g, "") // Remove punctuation
+      .replace(/[^\w\s]/g, "")
       .split(/\s+/);
 
     for (const word of words) {
@@ -178,7 +178,6 @@ function relevanceScore(chunk, questionWords) {
 
   for (const qWord of questionWords) {
     for (const cWord of wordsInChunk) {
-      // Exact match or prefix match (e.g., "compute" in "computing")
       if (cWord === qWord || cWord.startsWith(qWord)) {
         score++;
         break;
@@ -192,7 +191,6 @@ function relevanceScore(chunk, questionWords) {
 function trimChunkSmart(chunk, maxLength) {
   if (chunk.length <= maxLength) return chunk;
 
-  // Try to trim at last sentence-ending punctuation before limit
   const trimmed = chunk.slice(0, maxLength);
   const lastPunct = trimmed.lastIndexOf(".");
   if (lastPunct > maxLength * 0.7) return trimmed.slice(0, lastPunct + 1);
@@ -211,6 +209,7 @@ function addChunksToResult(chunks, result, totalLength, maxLength) {
       if (remaining > 50) {
         const smartTrimmed = trimChunkSmart(chunk, remaining);
         result.push(smartTrimmed);
+        totalLength += smartTrimmed.trim().length; // ✅ FIXED HERE
       }
       break;
     }
@@ -220,7 +219,7 @@ function addChunksToResult(chunks, result, totalLength, maxLength) {
 
 function selectRelevantChunks(chunks, questions, options = {}) {
   const {
-    maxLength = 28999,
+    maxLength = 28499,
     minWordLength = 4,
     minChunkLength = 10,
     maxChunkLength = 10000,
@@ -257,7 +256,6 @@ function selectRelevantChunks(chunks, questions, options = {}) {
     maxLength
   );
 
-  // Add more text from unused chunks if length is still low
   if (totalLength < maxLength) {
     const usedChunks = new Set(result);
     const nonRelevantChunks = scoredChunks
