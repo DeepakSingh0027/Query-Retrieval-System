@@ -30,7 +30,7 @@ function splitQuestionsIntoParts(questions, parts) {
 
 // Preprocess and batch questions
 async function preProcessParts(questionsGroup, chunks, key) {
-  const splitter = 4; // early groups get smaller splits
+  const splitter = 2; // early groups get smaller splits
   const questionParts = splitQuestionsIntoParts(questionsGroup, splitter);
   const results = [];
   for (let part of questionParts) {
