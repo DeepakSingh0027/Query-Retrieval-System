@@ -76,6 +76,7 @@ export const hackrx = async (req, res) => {
     }
     console.log("Total questions:", questions.length);
 
+    //"https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D"
     // Step 1: Extract text and chunk it
     const text = await extractCleanText(documents);
     const chunks = chunkText(text);
