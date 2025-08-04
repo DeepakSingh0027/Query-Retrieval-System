@@ -36,7 +36,7 @@ async function preProcessParts(questionsGroup, chunks, key) {
   for (let part of questionParts) {
     const res = await processPart(part, chunks, key);
     results.push(...res);
-    await delay(7000); // wait for 6 second before next request
+    await delay(8000); // wait for 8 second before next request
   }
 
   return results;
