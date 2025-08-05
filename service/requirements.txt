@@ -7,3 +7,4 @@ transformers==4.30.2
 tensorflow==2.11.0
 keras==2.11.0
 huggingface-hub==0.15.1
+gunicorn==21.2.0
