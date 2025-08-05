@@ -1,17 +1,16 @@
 import extractCleanText from "../utils/extractText.js";
 import { chunkText } from "../utils/chunkText.js";
-import { selectRelevantChunks } from "../utils/selectRelevantChunks.js";
 import queryModel from "../utils/queryModel.js";
-
+import axios from "axios";
+import "dotenv/config";
+const MAX_CONTEXT_LENGTH = 29999;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-// Generic question splitter
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
   const total = questions.length;
-
   const baseSize = Math.floor(total / parts);
   let remainder = total % parts;
   let index = 0;
@@ -28,34 +27,47 @@ function splitQuestionsIntoParts(questions, parts) {
   return result;
 }
 
-// Preprocess and batch questions
 async function preProcessParts(questionsGroup, chunks, key) {
-  const splitter = 2; // early groups get smaller splits
+  const splitter = 2;
   const questionParts = splitQuestionsIntoParts(questionsGroup, splitter);
   const results = [];
+
   for (let part of questionParts) {
     const res = await processPart(part, chunks, key);
     results.push(...res);
-    await delay(8000); // wait for 8 second before next request
+    await delay(8000);
   }
 
   return results;
 }
 
-// Process one group of questions with relevant chunks
 async function processPart(questionsGroup, chunks, key) {
-  const relevantChunks = selectRelevantChunks(chunks, questionsGroup);
-  const context = relevantChunks.join("\n\n");
+  const relevantChunksSet = await Promise.all(
+    questionsGroup.map((q) => findMatches(q))
+  );
+
+  const relevantChunks = Array.from(
+    new Set(relevantChunksSet.flat().map((item) => item.chunk))
+  );
+
+  let context = "";
+  for (const chunk of relevantChunks) {
+    // Add with separator only if it fits
+    if ((context + "\n\n" + chunk).length <= MAX_CONTEXT_LENGTH) {
+      context += "\n\n" + chunk;
+    } else {
+      break; // Stop if adding more exceeds limit
+    }
+  }
   console.log(`Context length: ${context.length} for key ${key}`);
 
   try {
     console.log("Sends", key);
-    const answerArray = await queryModel(context, questionsGroup, key, 1);
+    const answerArray = await queryModel(context, questionsGroup, key);
     console.log("Received", key);
     if (Array.isArray(answerArray)) {
       return answerArray;
     } else {
-      console.warn("Unexpected answer format");
       return questionsGroup.map(() => "Unexpected response format.");
     }
   } catch (err) {
@@ -64,35 +76,47 @@ async function processPart(questionsGroup, chunks, key) {
   }
 }
 
-// Main handler
+async function findMatches(question) {
+  const res = await axios.post("http://localhost:5005/query", {
+    question,
+    top_k: 20,
+  });
+  return res.data;
+}
+
+async function embedChunks(chunks) {
+  const res = await axios.post("http://localhost:5005/embed", { chunks });
+  return res.data;
+}
+
 export const hackrx = async (req, res) => {
   try {
     const { documents, questions } = req.body;
 
-    if (!documents || !questions || !Array.isArray(questions)) {
+    if (!documents || !Array.isArray(questions)) {
       return res.status(400).json({
         error: "Missing or invalid 'documents' or 'questions' array",
       });
     }
+
     console.log("Total questions:", questions.length);
 
-    //"https://hackrx.blob.core.windows.net/assets/policy.pdf?sv=2023-01-03&st=2025-07-04T09%3A11%3A24Z&se=2027-07-05T09%3A11%3A00Z&sr=b&sp=r&sig=N4a9OU0w0QXO6AOIBiu4bpl7AXvEZogeT%2FjUHNO7HzQ%3D"
-    // Step 1: Extract text and chunk it
     const text = await extractCleanText(documents);
     const chunks = chunkText(text);
 
-    // Step 2: Divide questions into 5 logical batches
+    // Embed chunks
+    await embedChunks(chunks);
+
+    // Split questions into 6 parts
     const questionGroups = splitQuestionsIntoParts(questions, 6);
 
-    // Step 3: Run all batches in parallel
     const answerPromises = questionGroups.map((group, idx) =>
       preProcessParts(group, chunks, idx + 1)
     );
 
     const groupedAnswers = await Promise.all(answerPromises);
     const allAnswers = groupedAnswers.flat();
-
-    console.log("THE END.");
+    console.log("All answers received:", allAnswers.length);
     return res.json({ answers: allAnswers });
   } catch (err) {
     console.error(
