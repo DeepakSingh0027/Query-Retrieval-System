@@ -81,7 +81,7 @@ async function processPart(questionsGroup, chunks, key) {
 async function findMatches(question) {
   const res = await axios.post(LINK1, {
     question,
-    top_k: 20,
+    top_k: 30,
   });
   return res.data;
 }
