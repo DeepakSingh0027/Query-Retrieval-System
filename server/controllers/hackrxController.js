@@ -7,6 +7,8 @@ const MAX_CONTEXT_LENGTH = 29999;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+const LINK1 = process.env.LINK1 || "http://localhost:5005/query";
+const LINK2 = process.env.LINK2 || "http://localhost:5005/embed";
 
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
@@ -77,7 +79,7 @@ async function processPart(questionsGroup, chunks, key) {
 }
 
 async function findMatches(question) {
-  const res = await axios.post("http://localhost:5005/query", {
+  const res = await axios.post(LINK1, {
     question,
     top_k: 20,
   });
@@ -85,7 +87,7 @@ async function findMatches(question) {
 }
 
 async function embedChunks(chunks) {
-  const res = await axios.post("http://localhost:5005/embed", { chunks });
+  const res = await axios.post(LINK2, { chunks });
   return res.data;
 }
 
