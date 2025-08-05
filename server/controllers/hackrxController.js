@@ -43,14 +43,21 @@ async function preProcessParts(questionsGroup, chunks, key) {
 
   return results;
 }
+function transpose(matrix) {
+  const maxLength = Math.max(...matrix.map((row) => row.length));
+  return Array.from({ length: maxLength }, (_, i) =>
+    matrix.map((row) => row[i]).filter(Boolean)
+  ).flat();
+}
 
 async function processPart(questionsGroup, chunks, key) {
   const relevantChunksSet = await Promise.all(
     questionsGroup.map((q) => findMatches(q))
   );
+  const transposedChunks = transpose(relevantChunksSet);
 
   const relevantChunks = Array.from(
-    new Set(relevantChunksSet.flat().map((item) => item.chunk))
+    new Set(transposedChunks.flat().map((item) => item.chunk))
   );
 
   let context = "";
