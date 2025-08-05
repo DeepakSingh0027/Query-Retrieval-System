@@ -7,14 +7,9 @@ const MAX_CONTEXT_LENGTH = 29999;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-function transpose(matrix) {
-  const maxLength = Math.max(...matrix.map((row) => row.length));
-  return Array.from({ length: maxLength }, (_, i) =>
-    matrix.map((row) => row[i]).filter(Boolean)
-  );
-}
-const LINK1 = process.env.LINK1;
-const LINK2 = process.env.LINK2;
+
+const LINK1 = process.env.LINK1 || "http://localhost:5005/query";
+const LINK2 = process.env.LINK2 || "http://localhost:5005/embed";
 
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
@@ -54,10 +49,8 @@ async function processPart(questionsGroup, chunks, key) {
     questionsGroup.map((q) => findMatches(q))
   );
 
-  const transposedChunks = transpose(relevantChunksSet);
-
   const relevantChunks = Array.from(
-    new Set(transposedChunks.flat().map((item) => item.chunk))
+    new Set(relevantChunksSet.flat().map((item) => item.chunk))
   );
 
   let context = "";
@@ -87,7 +80,7 @@ async function processPart(questionsGroup, chunks, key) {
 }
 
 async function findMatches(question) {
-  const res = await axios.post(LINK1, {
+  const res = await axios.post(LINK2, {
     question,
     top_k: 30,
   });
@@ -95,7 +88,7 @@ async function findMatches(question) {
 }
 
 async function embedChunks(chunks) {
-  const res = await axios.post(LINK2, { chunks });
+  const res = await axios.post(LINK1, { chunks });
   return res.data;
 }
 

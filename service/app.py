@@ -14,12 +14,13 @@ def embed_chunks():
         embedding = embed_text(chunk)
         stored_chunks.append({"chunk": chunk, "embedding": embedding})
         result.append({"chunk": chunk, "embedding": embedding})
+    print(f"Stored {len(stored_chunks)} chunks in memory.")
     return jsonify(result)
 
 @app.route("/query", methods=["POST"])
 def query_embedding():
     question = request.json.get("question", "")
-    top_k = request.json.get("top_k", 5)
+    top_k = request.json.get("top_k", 3)
     matches = find_similar_chunks(question, stored_chunks, top_k)
     return jsonify(matches)
 

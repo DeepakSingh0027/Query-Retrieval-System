@@ -1,6 +1,0 @@
-pyproject.toml
-poetry.lock
-Pipfile
-Pipfile.lock
-.tool-versions
-environment.yml
