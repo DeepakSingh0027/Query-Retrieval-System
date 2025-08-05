@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request, jsonify
 from utils import embed_text, find_similar_chunks
 
@@ -25,4 +26,5 @@ def query_embedding():
     return jsonify(matches)
 
 if __name__ == "__main__":
-    app.run(port=5005)
+    port = int(os.environ.get("PORT", 5000))  # 5000 is a default fallback for local dev
+    app.run(host="0.0.0.0", port=port)
