@@ -13,8 +13,8 @@ function transpose(matrix) {
     matrix.map((row) => row[i]).filter(Boolean)
   );
 }
-const LINK1 = process.env.LINK1 || "http://localhost:5005/query";
-const LINK2 = process.env.LINK2 || "http://localhost:5005/embed";
+const LINK1 = process.env.LINK1;
+const LINK2 = process.env.LINK2;
 
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
