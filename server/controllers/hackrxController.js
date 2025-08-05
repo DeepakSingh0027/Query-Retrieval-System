@@ -1,4 +1,5 @@
 import extractCleanText from "../utils/extractText.js";
+import smartExtractText from "../utils/smartExtractText.js";
 import { chunkText } from "../utils/chunkText.js";
 import queryModel from "../utils/queryModel.js";
 import axios from "axios";
@@ -111,7 +112,7 @@ export const hackrx = async (req, res) => {
 
     console.log("Total questions:", questions.length);
 
-    const text = await extractCleanText(documents);
+    const text = await smartExtractText(documents);
     const chunks = chunkText(text);
 
     // Embed chunks
