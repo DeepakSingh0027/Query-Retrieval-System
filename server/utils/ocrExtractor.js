@@ -1,60 +1,77 @@
-import { fromPath } from "pdf2pic";
-import Tesseract from "tesseract.js";
-import fs from "fs/promises";
-import os from "os";
+import { createWorker } from "tesseract.js";
+import fs from "fs-extra";
+import fss from "fs";
 import path from "path";
+import os from "os";
+import axios from "axios";
+import { createCanvas } from "canvas";
+import pdfjsLib from "pdfjs-dist/legacy/build/pdf.js";
+import pLimit from "p-limit";
 
-// Step 1: Convert PDF pages to PNG images
-const convertPdfToImages = async (pdfPath) => {
-  const tempDir = path.join(os.tmpdir(), `pdf_images_${Date.now()}`);
-  await fs.mkdir(tempDir, { recursive: true });
+const { getDocument } = pdfjsLib;
 
-  const converter = fromPath(pdfPath, {
-    density: 150,
-    savePath: tempDir,
-    format: "png",
-    saveFilename: "page",
-    width: 1200,
-    height: 1600,
+const worker = await createWorker("eng");
+
+// Download PDF to a temp file
+async function downloadToTempFile(url) {
+  const tempDir = os.tmpdir();
+  const tempPath = path.join(tempDir, `temp_${Date.now()}.pdf`);
+  const response = await axios.get(url, { responseType: "stream" });
+
+  await new Promise((resolve, reject) => {
+    const stream = fss.createWriteStream(tempPath);
+    response.data.pipe(stream);
+    stream.on("finish", resolve);
+    stream.on("error", reject);
   });
 
-  const maxPages = 5; // You can adjust this
-  const imagePaths = [];
+  return tempPath;
+}
 
-  for (let page = 1; page <= maxPages; page++) {
-    const result = await converter(page);
-    if (result.path) imagePaths.push(result.path);
-    else break;
-  }
-
-  return imagePaths;
-};
-
-// Step 2: Use OCR to extract text from each image
-const extractTextFromImages = async (imagePaths) => {
-  const texts = [];
-
-  for (const imgPath of imagePaths) {
-    const {
-      data: { text },
-    } = await Tesseract.recognize(imgPath, "eng");
-    texts.push(text.trim());
-  }
-
-  return texts.join("\n\n");
-};
-
-// Step 3: Full wrapper function
-const extractTextFromImagePdf = async (pdfPath) => {
-  const images = await convertPdfToImages(pdfPath);
-  const text = await extractTextFromImages(images);
-
-  // Clean up
-  for (const img of images) {
-    await fs.unlink(img).catch(() => {});
-  }
-
+// OCR from canvas
+async function extractTextFromCanvas(canvas) {
+  const imageBuffer = canvas.toBuffer("image/png");
+  const {
+    data: { text },
+  } = await worker.recognize(imageBuffer);
   return text.trim();
-};
+}
 
-export default extractTextFromImagePdf;
+// Extract text from image-based PDF with concurrency
+export async function extractTextFromPdf(pdfUrl) {
+  const pdfPath = await downloadToTempFile(pdfUrl);
+  const outputDir = path.join(
+    "output-images",
+    path.basename(pdfPath, path.extname(pdfPath))
+  );
+  await fs.ensureDir(outputDir);
+
+  console.log("📄 Loading PDF...");
+  const pdf = await getDocument(pdfPath).promise;
+  const concurrencyLimit = pLimit(3); // 👈 Change concurrency here (2–4 is safe)
+
+  const pageTasks = [];
+
+  for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+    pageTasks.push(
+      concurrencyLimit(async () => {
+        console.log(`📄 Processing page ${pageNum}...`);
+        const page = await pdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 2.0 });
+
+        const canvas = createCanvas(viewport.width, viewport.height);
+        const context = canvas.getContext("2d");
+        await page.render({ canvasContext: context, viewport }).promise;
+
+        const pageText = await extractTextFromCanvas(canvas);
+        return `\n\n--- Page ${pageNum} ---\n${pageText}`;
+      })
+    );
+  }
+
+  const allText = await Promise.all(pageTasks);
+  await worker.terminate();
+  console.log("\n✅ OCR Extraction Complete.");
+
+  return allText.join("\n").trim();
+}

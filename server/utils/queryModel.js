@@ -3,7 +3,7 @@ import { AzureKeyCredential } from "@azure/core-auth";
 import "dotenv/config";
 
 const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1";
+const model = "openai/gpt-4.1-mini";
 const temperature = 0.7; // Adjusted temperature for more balanced responses
 
 function getTokenByKey(key) {

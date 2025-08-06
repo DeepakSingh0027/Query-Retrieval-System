@@ -48,7 +48,12 @@ const extractCleanText = async (filePathOrUrl) => {
     },
   };
 
-  const data = await pdf(dataBuffer, options);
+  let data = { text: "" };
+  try {
+    data = await pdf(dataBuffer, options);
+  } catch (err) {
+    console.warn("PDF parse failed:", err.message);
+  }
 
   // If we downloaded a temp file, delete it
   if (actualPath !== filePathOrUrl) {
