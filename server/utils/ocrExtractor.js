@@ -13,11 +13,22 @@ const { getDocument } = pdfjsLib;
 const worker = await createWorker("eng");
 
 // Download PDF to a temp file
-async function downloadToTempFile(url) {
+const downloadToTempFile = async (url) => {
   const tempDir = os.tmpdir();
   const tempPath = path.join(tempDir, `temp_${Date.now()}.pdf`);
   const response = await axios.get(url, { responseType: "stream" });
 
+  // Check status and content type
+  if (response.status !== 200) {
+    throw new Error(`Failed to download PDF. Status: ${response.status}`);
+  }
+
+  const contentType = response.headers["content-type"];
+  if (!contentType || !contentType.includes("application/pdf")) {
+    throw new Error(`Expected a PDF file but got: ${contentType}`);
+  }
+
+  // Write to disk
   await new Promise((resolve, reject) => {
     const stream = fss.createWriteStream(tempPath);
     response.data.pipe(stream);
@@ -26,7 +37,7 @@ async function downloadToTempFile(url) {
   });
 
   return tempPath;
-}
+};
 
 // OCR from canvas
 async function extractTextFromCanvas(canvas) {
