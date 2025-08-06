@@ -4,7 +4,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "postinstall": "npm rebuild sharp",
+    "postinstall": "npm rebuild sharp && npm rebuild canvas",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
