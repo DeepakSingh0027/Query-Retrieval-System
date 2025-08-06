@@ -1,16 +1,16 @@
-import extractCleanText from "../utils/extractText.js";
 import smartExtractText from "../utils/smartExtractText.js";
 import { chunkText } from "../utils/chunkText.js";
 import queryModel from "../utils/queryModel.js";
-import axios from "axios";
 import "dotenv/config";
+import {
+  embedChunks as localEmbedChunks,
+  findMatches as localFindMatches,
+} from "../utils/semanticSearch.js";
+
 const MAX_CONTEXT_LENGTH = 29999;
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
-
-const LINK1 = process.env.LINK1 || "http://localhost:5005/embed";
-const LINK2 = process.env.LINK2 || "http://localhost:5005/query";
 
 function splitQuestionsIntoParts(questions, parts) {
   const result = [];
@@ -88,16 +88,11 @@ async function processPart(questionsGroup, chunks, key) {
 }
 
 async function findMatches(question) {
-  const res = await axios.post(LINK2, {
-    question,
-    top_k: 30,
-  });
-  return res.data;
+  return await localFindMatches(question, 30);
 }
 
 async function embedChunks(chunks) {
-  const res = await axios.post(LINK1, { chunks });
-  return res.data;
+  return await localEmbedChunks(chunks);
 }
 
 export const hackrx = async (req, res) => {
