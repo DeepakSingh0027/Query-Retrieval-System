@@ -1,7 +1,7 @@
 import { pipeline } from "@xenova/transformers";
 
 let embedder = null;
-let embeddedChunks = []; // This will store { text, embedding }
+let embeddedChunks = []; // Array of { text, embedding }
 
 export async function initEmbedder() {
   if (!embedder) {
@@ -11,7 +11,7 @@ export async function initEmbedder() {
 
 export async function embedChunks(chunks) {
   await initEmbedder();
-  embeddedChunks = []; // Clear previous embeddings
+  embeddedChunks = []; // Reset the array
 
   for (const text of chunks) {
     const { data } = await embedder(text, { pooling: "mean", normalize: true });
@@ -28,7 +28,6 @@ function cosineSimilarity(a, b) {
   return dot / (normA * normB);
 }
 
-// Replaces the old axios call to /query
 export async function findMatches(question, top_k = 5) {
   await initEmbedder();
   const { data: questionEmbedding } = await embedder(question, {
