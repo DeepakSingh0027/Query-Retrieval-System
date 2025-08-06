@@ -10,6 +10,7 @@ export async function initEmbedder() {
 }
 
 export async function embedChunks(chunks) {
+  console.log("Embedding chunks:", chunks.length);
   await initEmbedder();
   embeddedChunks = []; // Clear previous embeddings
 
@@ -18,6 +19,10 @@ export async function embedChunks(chunks) {
     embeddedChunks.push({ text, embedding: data });
   }
 
+  console.log(
+    "Embedding complete. Total chunks embedded:",
+    embeddedChunks.length
+  );
   return { success: true, count: embeddedChunks.length };
 }
 
