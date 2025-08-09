@@ -1,22 +1,40 @@
 import { pipeline } from "@xenova/transformers";
 
 let embedder = null;
-let embeddedChunks = []; // This will store { text, embedding }
+let embeddedChunks = []; // Stores { text, embedding }
 
 export async function initEmbedder() {
   if (!embedder) {
-    embedder = await pipeline("feature-extraction", "Xenova/all-MiniLM-L6-v2");
+    embedder = await pipeline(
+      "feature-extraction",
+      "Xenova/paraphrase-multilingual-MiniLM-L12-v2"
+    );
   }
 }
 
-export async function embedChunks(chunks) {
+export async function embedChunks(chunks, batchSize = 32) {
   console.log("Embedding chunks:", chunks.length);
   await initEmbedder();
-  embeddedChunks = []; // Clear previous embeddings
+  embeddedChunks = [];
 
-  for (const text of chunks) {
-    const { data } = await embedder(text, { pooling: "mean", normalize: true });
-    embeddedChunks.push({ text, embedding: data });
+  for (let i = 0; i < chunks.length; i += batchSize) {
+    const batch = chunks.slice(i, i + batchSize);
+
+    // Embed the batch
+    const { data, dims } = await embedder(batch, {
+      pooling: "mean",
+      normalize: true,
+    });
+
+    const embeddingSize = dims[1];
+    for (let j = 0; j < batch.length; j++) {
+      const start = j * embeddingSize;
+      const end = start + embeddingSize;
+      embeddedChunks.push({
+        text: batch[j],
+        embedding: Array.from(data.slice(start, end)),
+      });
+    }
   }
 
   console.log(
@@ -33,18 +51,22 @@ function cosineSimilarity(a, b) {
   return dot / (normA * normB);
 }
 
-// Replaces the old axios call to /query
-export async function findMatches(question, top_k = 5) {
+export async function findMatches(question) {
   await initEmbedder();
-  const { data: questionEmbedding } = await embedder(question, {
+
+  const { data, dims } = await embedder([question], {
     pooling: "mean",
     normalize: true,
   });
+
+  const questionEmbedding = Array.from(data.slice(0, dims[1]));
 
   const similarities = embeddedChunks.map(({ text, embedding }) => ({
     chunk: text,
     score: cosineSimilarity(embedding, questionEmbedding),
   }));
 
-  return similarities.sort((a, b) => b.score - a.score).slice(0, top_k);
+  return similarities
+    .filter(({ score }) => score > 0.1)
+    .sort((a, b) => b.score - a.score);
 }

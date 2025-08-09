@@ -5,77 +5,83 @@ import axios from "axios";
 import path from "path";
 import os from "os";
 
-// Helper to check if a page contains meaningful text
+// Fast regex precompiled
+const SYMBOLS_ONLY = /^[^a-zA-Z0-9]{5,}$/;
+
+// Check if text has actual value
 const isMeaningful = (text) => {
-  const cleaned = text.replace(/\s+/g, ""); // Remove all spaces, tabs, newlines
-  const isMostlySymbols = /^[^a-zA-Z0-9]{5,}$/.test(cleaned);
-  return cleaned.length > 10 && !isMostlySymbols;
+  const cleaned = text.replace(/\s+/g, "");
+  return cleaned.length > 10 && !SYMBOLS_ONLY.test(cleaned);
 };
 
-// Helper to download remote PDF to temp file
-const downloadToTempFile = async (url) => {
-  const tempDir = os.tmpdir();
-  const tempPath = path.join(tempDir, `temp_${Date.now()}.pdf`);
+// Stream PDF from URL
+const fetchPdfStream = async (url) => {
   const response = await axios.get(url, { responseType: "stream" });
-
-  // Check status and content type
   if (response.status !== 200) {
     throw new Error(`Failed to download PDF. Status: ${response.status}`);
   }
-
-  const contentType = response.headers["content-type"];
-  if (!contentType || !contentType.includes("application/pdf")) {
-    throw new Error(`Expected a PDF file but got: ${contentType}`);
+  if (!response.headers["content-type"]?.includes("application/pdf")) {
+    throw new Error(
+      `Expected a PDF file but got: ${response.headers["content-type"]}`
+    );
   }
+  return response.data; // Readable stream
+};
 
-  // Write to disk
+// Optional: Save temp file if you must
+const downloadToTempFile = async (url) => {
+  const tempPath = path.join(os.tmpdir(), `temp_${Date.now()}.pdf`);
+  const stream = await fetchPdfStream(url);
   await new Promise((resolve, reject) => {
-    const stream = fss.createWriteStream(tempPath);
-    response.data.pipe(stream);
-    stream.on("finish", resolve);
-    stream.on("error", reject);
+    const fileStream = fss.createWriteStream(tempPath);
+    stream.pipe(fileStream);
+    fileStream.on("finish", resolve);
+    fileStream.on("error", reject);
   });
-
   return tempPath;
 };
 
-// Main function (unchanged name)
-const extractCleanText = async (filePathOrUrl) => {
-  let actualPath = filePathOrUrl;
+export default async function extractCleanText(
+  filePathOrUrl,
+  { keepTemp = false } = {}
+) {
+  let input;
 
-  // If input is a URL, download to temp file
   if (/^https?:\/\//.test(filePathOrUrl)) {
-    actualPath = await downloadToTempFile(filePathOrUrl);
+    // Stream directly unless keeping a local file
+    if (keepTemp) {
+      const tempFile = await downloadToTempFile(filePathOrUrl);
+      input = await fs.readFile(tempFile);
+      filePathOrUrl = tempFile;
+    } else {
+      input = await fetchPdfStream(filePathOrUrl);
+    }
+  } else {
+    input = await fs.readFile(filePathOrUrl);
   }
-
-  const dataBuffer = await fs.readFile(actualPath);
 
   const options = {
-    pagerender: (pageData) => {
-      return pageData.getTextContent().then((content) => {
-        const pageText = content.items.map((item) => item.str).join(" ");
-        return isMeaningful(pageText) ? pageText : "";
-      });
-    },
+    pagerender: (pageData) =>
+      pageData.getTextContent().then((content) => {
+        const text = content.items.map((item) => item.str).join(" ");
+        return isMeaningful(text) ? text : "";
+      }),
   };
 
-  let data = { text: "" };
+  let result;
   try {
-    data = await pdf(dataBuffer, options);
+    result = await pdf(input, options);
   } catch (err) {
     console.warn("PDF parse failed:", err.message);
+    result = { text: "" };
   }
 
-  // If we downloaded a temp file, delete it
-  if (actualPath !== filePathOrUrl) {
+  // Cleanup temp file if made
+  if (/^https?:\/\//.test(filePathOrUrl) && !keepTemp) {
     try {
-      await fs.unlink(actualPath);
-    } catch (err) {
-      console.warn("Could not delete temp file:", err.message);
-    }
+      await fs.unlink(filePathOrUrl);
+    } catch {}
   }
 
-  return data.text.trim();
-};
-
-export default extractCleanText;
+  return result.text.trim();
+}

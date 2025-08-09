@@ -1,16 +1,34 @@
 export function chunkText(text, maxTokens = 500) {
-  const sentences = text.split(/(?<=[.?!])\s+/);
+  // First split by periods followed by whitespace
+  const periodChunks = text.split(/(?<=\.)\s+/);
   let chunks = [];
-  let currentChunk = "";
 
-  for (let sentence of sentences) {
-    if ((currentChunk + sentence).split(" ").length > maxTokens) {
-      chunks.push(currentChunk.trim());
-      currentChunk = "";
+  // Then process each period chunk and split by newlines
+  for (let periodChunk of periodChunks) {
+    const lineChunks = periodChunk.split(/\n+|\r+/);
+
+    let currentChunk = "";
+
+    for (let line of lineChunks) {
+      // Skip empty lines
+      if (!line.trim()) continue;
+
+      // Check if adding the line exceeds max tokens
+      if ((currentChunk + line).split(/\s+/).length > maxTokens) {
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+        }
+        currentChunk = line + " ";
+      } else {
+        currentChunk += line + " ";
+      }
     }
-    currentChunk += sentence + " ";
+
+    // Add any remaining content from this period chunk
+    if (currentChunk.trim()) {
+      chunks.push(currentChunk.trim());
+    }
   }
 
-  if (currentChunk) chunks.push(currentChunk.trim());
   return chunks;
 }

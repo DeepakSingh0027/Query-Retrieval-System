@@ -1,0 +1,105 @@
+{
+  "documents": "https://hackrx.blob.core.windows.net/hackrx/rounds/News.pdf?sv=2023-01-03&spr=https&st=2025-08-07T17%3A10%3A11Z&se=2026-08-08T17%3A10%3A00Z&sr=b&sp=r&sig=ybRsnfv%2B6VbxPz5xF7kLLjC4ehU0NF7KDkXua9ujSf0%3D",
+  "questions": [
+    "ട്രംപ് ഏത് ദിവസമാണ് 100% ശുൽകം പ്രഖ്യാപിച്ചത്?",
+    "ഏത് ഉത്പന്നങ്ങൾക്ക് ഈ 100% ഇറക്കുമതി ശുൽകം ബാധകമാണ്?",
+    "ഏത് സാഹചര്യത്തിൽ ഒരു കമ്പനിയ്ക്ക് ഈ 100% ശുൽകത്തിൽ നിന്നും നിന്നും ഒഴികെയാക്കും?",
+    "What was Apple’s investment commitment and what was its objective?",
+    "What impact will this new policy have on consumers and the global market?"
+  ],
+  "allAnswers": [
+    "ഡോക്യുമെന്റിൽ ട്രംപ് 100% ശുൽകം ഏത് ദിവസം പ്രഖ്യാപിച്ചതാണെന്ന് വ്യക്തമല്ല.",
+    "ഈ 100% ഇറക്കുമതി ശുൽകം വൈദ്യുത വാഹനങ്ങൾ (electric vehicles) ഉൾപ്പെടുന്ന ഉത്പന്നങ്ങൾക്കാണ് ബാധകമായിരിക്കുന്നത്.",
+    "ഒരു കമ്പനി നിർദ്ദിഷ്ട മാനദണ്ഡങ്ങൾ പാലിച്ചില്ലെങ്കിൽ മാത്രമാണ് 100% ശുൽകത്തിൽ നിന്നും ഒഴിവാക്കപ്പെടുന്നത്. മാത്രമല്ല, ചില പ്രത്യേക സാഹചര്യങ്ങളിൽ, നയത്തിലെ വ്യത്യാസങ്ങൾ, നിയമങ്ങൾ, അല്ലെങ്കിൽ സർക്കാർ നിർദേശങ്ങൾ പ്രകാരം കമ്പനിയ്ക്ക് ഈ ശുൽകത്തിൽ നിന്നും ഒഴിവാക്കാമെന്നത് ഡോക്യുമെന്റിൽ വ്യക്തമാക്കിയിട്ടില്ല.",
+    "Apple committed $200 million to its Restore Fund, with the objective of accelerating nature-based carbon removal projects and promoting responsible forestry practices.",
+    "The document does not provide specific details regarding the impact of the new policy on consumers and the global market."
+  ]
+}
+{
+  "documents": "https://register.hackrx.in/utils/get-secret-token?hackTeam=7046",
+  "questions": [
+    "Go to the link and get the secret token and return it"
+  ],
+  "allAnswers": [
+    "I’m sorry, but I cannot access external links or retrieve information from them."
+  ]
+}
+{
+  "documents": "https://register.hackrx.in/utils/get-secret-token?hackTeam=7046",
+  "questions": [
+    "Go to the link and get the secret token and return it"
+  ],
+  "allAnswers": [
+    "5dec94996db68e8987600f99e8dfeb837c1b1cf5878c33e90328c94d56959cc6"
+  ]
+}
+{
+  "documents": "https://hackrx.blob.core.windows.net/hackrx/rounds/News.pdf?sv=2023-01-03&spr=https&st=2025-08-07T17%3A10%3A11Z&se=2026-08-08T17%3A10%3A00Z&sr=b&sp=r&sig=ybRsnfv%2B6VbxPz5xF7kLLjC4ehU0NF7KDkXua9ujSf0%3D",
+  "questions": [
+    "ട്രംപ് ഏത് ദിവസമാണ് 100% ശുൽകം പ്രഖ്യാപിച്ചത്?",
+    "ഏത് ഉത്പന്നങ്ങൾക്ക് ഈ 100% ഇറക്കുമതി ശുൽകം ബാധകമാണ്?",
+    "ഏത് സാഹചര്യത്തിൽ ഒരു കമ്പനിയ്ക്ക് ഈ 100% ശുൽകത്തിൽ നിന്നും നിന്നും ഒഴികെയാക്കും?",
+    "What was Apple’s investment commitment and what was its objective?",
+    "What impact will this new policy have on consumers and the global market?"
+  ],
+  "allAnswers": [
+    "2025 ഓഗസ്റ്റ് 6-ന്",
+    "വിഡോഷങ്ങൾക്കും കമ്പ്യൂട്ടർ ചിപ്പുകൾക്കും ടെസ്റ്റ് ചെയ്യുന്നതിനും ഇറക്കുമതി ശുൽകം 100% ആണ്.",
+    "ഒരു കമ്പനിയ്ക്ക് 100% ശുൽകത്തിൽ നിന്നും ഒഴിവാക്കപ്പെടുന്നത്, ആ കമ്പനി യു.എസ്. പ്രിസിഡൻറ് ഡോഡൺഡ് പ്രഖ്യാപിച്ച പ്രഖ്യാത ഡോക്ഷ്യത്തില്‍ നൂതന കമ്പ്യൂട്ടർ ചിപ്പുകൾ ടെസ്റ്റ് ചെയ്ത് വിജയകരമായി 100% ശുൽകം നൽകുന്ന മിതികൾ പാലിക്കുമ്പോഴാണ്.",
+    "Apple committed to investing $430 billion in the US economy over the next 5 years with the objective of creating 20,000 new jobs.",
+    "The document does not provide specific information about the impact of the new policy on consumers and the global market."
+  ]
+}
+{
+  "documents": "https://register.hackrx.in/utils/get-secret-token?hackTeam=7046",
+  "questions": [
+    "Go to the link and get the secret token and return it"
+  ],
+  "allAnswers": [
+    "5dec94996db68e8987600f99e8dfeb837c1b1cf5878c33e90328c94d56959cc6"
+  ]
+}
+{
+  "documents": "https://hackrx.blob.core.windows.net/hackrx/rounds/FinalRound4SubmissionPDF.pdf?sv=2023-01-03&spr=https&st=2025-08-07T14%3A23%3A48Z&se=2027-08-08T14%3A23%3A00Z&sr=b&sp=r&sig=nMtZ2x9aBvz%2FPjRWboEOZIGB%2FaGfNf5TfBOrhGqSv4M%3D",
+  "questions": [
+    "What is my flight number?"
+  ],
+  "allAnswers": [
+    "The document instructs you to first get your favourite city by calling the endpoint: GET https://register.hackrx.in/submissions/myFavouriteCity. Once you have the city name, you need to map it to its landmark using the tables provided. Then, based on the landmark, you should call the corresponding endpoint to get the flight number. The specific endpoint to call depends on the landmark: \n- Eiffel Tower: GET https://register.hackrx.in/teams/public/flights/getThirdCityFlightNumber\n- Taj Mahal: GET https://register.hackrx.in/teams/public/flights/getSecondCityFlightNumber\n- Big Ben: GET https://register.hackrx.in/teams/public/flights/getFourthCityFlightNumber\n- Gateway of India: GET https://register.hackrx.in/teams/public/flights/getFirstCityFlightNumber\n- All other landmarks: GET https://register.hackrx.in/teams/public/flights/getFifthCityFlightNumber\n\nTherefore, your flight number is the result you get after following these steps and calling the relevant endpoint based on your favourite city’s landmark."
+  ]
+}
+{
+  "documents": "https://register.hackrx.in/utils/get-secret-token?hackTeam=4929",
+  "questions": [
+    "Go to the link and get the secret token and return it"
+  ],
+  "allAnswers": [
+    "042600fe61424032f0c1f01937a766090d2731941d8c2d4f02b6d7c5554e113c"
+  ]
+}
+{
+  "documents": "https://hackrx.blob.core.windows.net/hackrx/rounds/News.pdf?sv=2023-01-03&spr=https&st=2025-08-07T17%3A10%3A11Z&se=2026-08-08T17%3A10%3A00Z&sr=b&sp=r&sig=ybRsnfv%2B6VbxPz5xF7kLLjC4ehU0NF7KDkXua9ujSf0%3D",
+  "questions": [
+    "ട്രംപ് ഏത് ദിവസമാണ് 100% ശുൽകം പ്രഖ്യാപിച്ചത്?",
+    "ഏത് ഉത്പന്നങ്ങൾക്ക് ഈ 100% ഇറക്കുമതി ശുൽകം ബാധകമാണ്?",
+    "ഏത് സാഹചര്യത്തിൽ ഒരു കമ്പനിയ്ക്ക് ഈ 100% ശുൽകത്തിൽ നിന്നും നിന്നും ഒഴികെയാക്കും?",
+    "What was Apple’s investment commitment and what was its objective?",
+    "What impact will this new policy have on consumers and the global market?"
+  ],
+  "allAnswers": [
+    "2025 ഓഗസ്റ്റ് 6-ന് ട്രംപ് 100% ശുൽകം പ്രഖ്യാപിച്ചു.",
+    "2025 ഓഗസ്റ്റ് 6-നു പ്രാബല്യത്തിൽ വരുന്ന 100% ഇറക്കുമതി ശുൽകം യുഎസ് നിർമ്മിത കമ്പ്യൂട്ടർ ചിപ്പുകൾക്കും യുഎസ് നിർമ്മിത ടെസിമി കണ്ടക്ടർ ചിപ്പുകൾക്കും ബാധകമാണ്.",
+    "യു.എസ്. എക്സ്പോം കൺട്രോൾസ് വകുപ്പ് വ്യക്തമാക്കുന്നതുപോലെ, കമ്പ്യൂട്ടറുകൾക്കോ ചിപ്പുകൾക്കോ ഈ 100% നിരക്ക് ബാധകമല്ലെങ്കിൽ, യുഎസ് കമ്പനികൾക്ക് ഈ അധിക തീരുവയിൽ നിന്ന് ഒഴിവാക്കാം. ഡോക്യുമെന്റിൽ പറയുന്നതുപോലെ, യുഎസ് കമ്പ്യൂട്ടറുകൾക്ക് ഈ ചുമത്ത് ബാധകമല്ല (US companies are not subject to this fee for computers).",
+    "Apple made a $200 million investment commitment with the objective of supporting projects that remove carbon from the atmosphere. This initiative aims to accelerate natural solutions for climate change and help Apple achieve its goal of becoming carbon neutral across its entire business, manufacturing supply chain, and product life cycle.",
+    "The new policy announced on August 6, 2025, by the US President aims to ensure that 100% of computer chips used in the United States are manufactured domestically. This policy will likely increase domestic production, potentially leading to higher prices for consumers due to reduced reliance on global supply chains. Globally, it may decrease demand for foreign-made chips, affecting international chip manufacturers and possibly leading to trade tensions."
+  ]
+}
+{
+  "documents": "https://register.hackrx.in/utils/get-secret-token?hackTeam=7046",
+  "questions": [
+    "Go to the link and get the secret token and return it"
+  ],
+  "allAnswers": [
+    "5dec94996db68e8987600f99e8dfeb837c1b1cf5878c33e90328c94d56959cc6"
+  ]
+}
