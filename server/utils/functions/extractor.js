@@ -5,7 +5,6 @@ import os from "os"; // OS-specific temp directory paths
 
 // Third-party libraries
 import mammoth from "mammoth"; // Extracts raw text from DOCX files
-import xlsx from "xlsx"; // Reads Excel files (.xlsx, .xls)
 import Tesseract from "tesseract.js"; // OCR engine for images
 import AdmZip from "adm-zip"; // Extracts ZIP files
 import { unzip } from "unzipit"; // Async unzip for PPTX/DOCX internal XML
@@ -19,6 +18,7 @@ import { extractTextFromPptxWithOCR } from "../extractorsUtils/pptExtract.js";
 import { extractTextFromDocxWithOCR } from "../extractorsUtils/docxExtract.js";
 import { extractTextFromExcel } from "../extractorsUtils/xlExtract.js";
 import { convertToPdf } from "./extractor2.js"; // Converts non-PDF to PDF
+
 export async function handleFile(fileOrUrl, depth = 0) {
   // Detect if the input is a URL or local file path
   const isUrl = /^https?:\/\//.test(fileOrUrl);

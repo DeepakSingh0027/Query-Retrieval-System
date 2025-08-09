@@ -7,7 +7,7 @@ import fs from "fs/promises";
 let keyLock = Promise.resolve();
 
 const endpoint = "https://models.github.ai/inference";
-const model = "openai/gpt-4.1-mini";
+const model = "openai/gpt-4.1";
 const temperature = 0.7;
 
 async function getTokenByKey() {
