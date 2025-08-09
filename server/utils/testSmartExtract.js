@@ -6,7 +6,6 @@ import {
 } from "./semanticSearch.js";
 
 const testUrls = [
-<<<<<<< HEAD
   "./test/p11.docx",
   "./test/p12.tmt",
   "./test/p9.pptx",
@@ -17,9 +16,6 @@ const testUrls = [
   "./test/p3.docx",
   "./test/p1.pdf",
   "./test/p13.pdf",
-=======
-  "https://arxiv.org/pdf/1708.08021.pdf", // PDF with mostly text
->>>>>>> c1cb39a789f928abd07dfaeb93c359dcbf23d82d
 ];
 
 for (const url of testUrls) {
