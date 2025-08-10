@@ -5,18 +5,7 @@ import {
   findMatches as localFindMatches,
 } from "./semanticSearch.js";
 
-const testUrls = [
-  "./test/p11.docx",
-  "./test/p12.tmt",
-  "./test/p9.pptx",
-  "./test/p7.zip",
-  "./test/p6.xlsx",
-  "./test/p5.jpg",
-  "./test/p4.pptx",
-  "./test/p3.docx",
-  "./test/p1.pdf",
-  "./test/p13.pdf",
-];
+const testUrls = [];
 
 for (const url of testUrls) {
   console.time("Execution Time");

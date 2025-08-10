@@ -1,76 +1,95 @@
-// Import core Node.js modules
-import fs from "fs"; // File system access
-import path from "path"; // File path utilities
-import os from "os"; // OS-specific temp directory paths
+// ------------------------------
+// Core Node.js modules
+// ------------------------------
+import fs from "fs"; // Provides file system read/write access
+import path from "path"; // Helps handle file & directory paths in a cross-platform way
+import os from "os"; // Gives OS-level info (like the temp directory path)
 
-// Third-party libraries
-import mammoth from "mammoth"; // Extracts raw text from DOCX files
-import Tesseract from "tesseract.js"; // OCR engine for images
-import AdmZip from "adm-zip"; // Extracts ZIP files
-import { unzip } from "unzipit"; // Async unzip for PPTX/DOCX internal XML
-import { fileTypeFromBuffer } from "file-type"; // Detects file MIME type
-import axios from "axios"; // HTTP client for downloading remote files
-import { v4 as uuidv4 } from "uuid"; // Generates unique IDs for temp files
+// ------------------------------
+// Third-party dependencies
+// ------------------------------
+import mammoth from "mammoth"; // DOCX → plain text (XML parsing)
+import Tesseract from "tesseract.js"; // OCR (Optical Character Recognition) for images
+import AdmZip from "adm-zip"; // ZIP archive extraction (synchronous)
+import { unzip } from "unzipit"; // Asynchronous unzip, used for reading PPTX/DOCX XML
+import { fileTypeFromBuffer } from "file-type"; // Detect file type by inspecting binary data
+import axios from "axios"; // HTTP client for downloading files from URLs
+import { v4 as uuidv4 } from "uuid"; // Generates unique IDs (used for temp file paths)
 
-// Project-local imports (custom modules in your codebase)
-import smartExtractText from "../smartExtractText.js";
-import { extractTextFromPptxWithOCR } from "../extractorsUtils/pptExtract.js";
-import { extractTextFromDocxWithOCR } from "../extractorsUtils/docxExtract.js";
-import { extractTextFromExcel } from "../extractorsUtils/xlExtract.js";
-import { convertToPdf } from "./extractor2.js"; // Converts non-PDF to PDF
+// ------------------------------
+// Project-local modules
+// ------------------------------
+import smartExtractText from "../smartExtractText.js"; // Intelligent PDF text extraction (OCR fallback)
+import { extractTextFromPptxWithOCR } from "../extractorsUtils/pptExtract.js"; // PPTX text extraction (OCR included)
+import { extractTextFromDocxWithOCR } from "../extractorsUtils/docxExtract.js"; // DOCX text extraction (OCR included)
+import { extractTextFromExcel } from "../extractorsUtils/xlExtract.js"; // Excel file text extraction
+import { convertToPdf } from "./extractor2.js"; // Converts unsupported file types into PDF
 
+/**
+ * Main file handling entry point.
+ * Supports:
+ * - Local file paths
+ * - Remote URLs (auto-downloads to temp file)
+ * - Various file formats (PDF, DOCX, PPTX, XLSX, images, ZIP)
+ *
+ * @param {string} fileOrUrl - Path or URL to the file
+ * @param {number} depth - Tracks recursive ZIP processing depth
+ */
 export async function handleFile(fileOrUrl, depth = 0) {
-  // Detect if the input is a URL or local file path
-  const isUrl = /^https?:\/\//.test(fileOrUrl);
+  const isUrl = /^https?:\/\//.test(fileOrUrl); // Quick regex check for HTTP/HTTPS
 
-  let filePath = fileOrUrl; // Will hold path to local file (either given or downloaded)
-  let deleteAfterProcessing = false; // Flag to remove temp files after processing
+  let filePath = fileOrUrl;
+  let deleteAfterProcessing = false; // Whether to remove file after processing
 
   try {
-    // If it's a URL, download to a temporary file
+    // ------------------------------
+    // If URL → download it first
+    // ------------------------------
     if (isUrl) {
       filePath = await downloadFileFromUrl(fileOrUrl);
-      deleteAfterProcessing = true; // Mark for cleanup later
+      deleteAfterProcessing = true;
     }
 
-    // Load the file into memory to detect MIME type
+    // Read file into memory to detect type
     const buffer = await fs.promises.readFile(filePath);
-    const type = await fileTypeFromBuffer(buffer);
-    const mime = type?.mime || "application/octet-stream"; // Fallback if unknown
+    const type = await fileTypeFromBuffer(buffer); // May return null if type not detected
+    const mime = type?.mime || "application/octet-stream"; // Default MIME if unknown
 
     console.log(`📄 Detected MIME type: ${mime}`);
 
     let result;
 
-    // Select the correct extraction method based on MIME type
+    // ------------------------------
+    // MIME-type-based extraction routing
+    // ------------------------------
     switch (mime) {
       case "application/pdf":
-        result = await smartExtractText(filePath); // PDF → smart extraction
+        result = await smartExtractText(filePath);
         break;
 
       case "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        result = await extractTextFromDocxWithOCR(filePath); // DOCX with OCR
+        result = await extractTextFromDocxWithOCR(filePath);
         break;
 
       case "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        result = extractTextFromExcel(filePath); // Excel
+        result = extractTextFromExcel(filePath);
         break;
 
       case "application/vnd.openxmlformats-officedocument.presentationml.presentation":
-        result = await extractTextFromPptxWithOCR(filePath); // PPTX with OCR
+        result = await extractTextFromPptxWithOCR(filePath);
         break;
 
       case "image/png":
       case "image/jpeg":
-        result = await extractTextFromImage(filePath); // OCR on image
+        result = await extractTextFromImage(filePath);
         break;
 
       case "application/zip":
-        result = await handleZip(filePath, depth); // Recursively process ZIPs
+        result = await handleZip(filePath, depth);
         break;
 
       default:
-        // If unknown type → try converting to PDF then extracting
+        // Unknown format → try converting to PDF first
         console.time("Pdf Conversion");
         filePath = await convertToPdf(filePath);
         console.timeEnd("Pdf Conversion");
@@ -80,9 +99,11 @@ export async function handleFile(fileOrUrl, depth = 0) {
     return result;
   } catch (err) {
     console.error("Error during extraction:", err);
-    return ["Failed to extract text."];
+    return ["Failed to extract text."]; // Standard failure output
   } finally {
-    // Always clean up temporary downloaded files
+    // ------------------------------
+    // Cleanup temporary downloads
+    // ------------------------------
     if (deleteAfterProcessing) {
       try {
         await fs.promises.unlink(filePath);
@@ -93,45 +114,68 @@ export async function handleFile(fileOrUrl, depth = 0) {
     }
   }
 }
+
+/**
+ * Downloads file from a remote URL to a temp directory.
+ * @returns {Promise<string>} Path to the saved file
+ */
 async function downloadFileFromUrl(url) {
-  const res = await axios.get(url, { responseType: "arraybuffer" }); // Download raw binary
-  const ext = path.extname(new URL(url).pathname).split("?")[0] || ".tmp"; // Try to keep original ext
-  const tempPath = path.join(os.tmpdir(), `remote-${uuidv4()}${ext}`); // Generate unique temp file path
-  await fs.promises.writeFile(tempPath, res.data); // Save to disk
+  const res = await axios.get(url, { responseType: "arraybuffer" }); // Download binary
+  const ext = path.extname(new URL(url).pathname).split("?")[0] || ".tmp"; // Keep original extension if possible
+  const tempPath = path.join(os.tmpdir(), `remote-${uuidv4()}${ext}`);
+  await fs.promises.writeFile(tempPath, res.data);
   console.log(`Downloaded URL to: ${tempPath}`);
   return tempPath;
 }
+
+/**
+ * Extracts raw text from DOCX using `mammoth`.
+ */
 async function extractTextFromDocx(buffer) {
-  const result = await mammoth.extractRawText({ buffer }); // Extract text from DOCX XML
+  const result = await mammoth.extractRawText({ buffer });
   return result.value || "";
 }
+
+/**
+ * Extracts raw text from PPTX by unzipping and reading XML slide data.
+ */
 async function extractTextFromPptx(filePath) {
   const buffer = await fs.promises.readFile(filePath);
-  const { entries } = await unzip(buffer); // Unzip PPTX into entries
+  const { entries } = await unzip(buffer); // Asynchronous unzip
 
   let text = "";
   for (const name in entries) {
     if (name.includes("ppt/slides/slide")) {
       const content = await entries[name].text();
-      // Extract all text between <a:t> tags (PPTX stores text like this)
+      // Extract <a:t> tags where PPTX stores text
       const matches = [...content.matchAll(/<a:t>(.*?)<\/a:t>/g)];
       text += matches.map((m) => m[1]).join(" ") + "\n";
     }
   }
-
   return text || "No text found in PPT slides.";
 }
+
+/**
+ * Runs OCR on image files using Tesseract.js.
+ */
 async function extractTextFromImage(filePath) {
   const result = await Tesseract.recognize(filePath, "eng");
   return result.data.text || "No text recognized in image.";
 }
-const MAX_ZIP_DEPTH = 1; // Prevents infinite recursion
-const MAX_FILE_SIZE = 500 * 1024 * 1024; // 500 MB safety limit
 
+// ------------------------------
+// ZIP handling
+// ------------------------------
+const MAX_ZIP_DEPTH = 1; // Avoid infinite recursion from nested ZIPs
+const MAX_FILE_SIZE = 500 * 1024 * 1024; // Skip files > 500MB for performance/safety
+
+/**
+ * Extracts and processes files inside a ZIP archive.
+ * Recursively processes nested archives up to MAX_ZIP_DEPTH.
+ */
 async function handleZip(filePath, depth = 0) {
-  // Prevent excessive nesting
   if (depth > MAX_ZIP_DEPTH) {
-    return `⚠️ Skipped ZIP: Exceeded max ZIP nesting depth (${MAX_ZIP_DEPTH}).`;
+    return `⚠️ Skipped ZIP: Exceeded max nesting depth (${MAX_ZIP_DEPTH}).`;
   }
 
   const zip = new AdmZip(filePath);
@@ -139,11 +183,10 @@ async function handleZip(filePath, depth = 0) {
   let output = "";
 
   for (const entry of entries) {
-    if (entry.isDirectory) continue; // Skip folders
+    if (entry.isDirectory) continue;
 
     const entryData = entry.getData();
     if (entryData.length > MAX_FILE_SIZE) {
-      // Skip oversized files inside ZIP
       output += `${entry.entryName}:\n⚠️ Skipped: File too large (${(
         entryData.length /
         1024 /
@@ -154,18 +197,17 @@ async function handleZip(filePath, depth = 0) {
 
     let tempPath;
     try {
-      // Create a unique temp path for the extracted file
       tempPath = path.join(os.tmpdir(), uuidv4(), entry.entryName);
       fs.mkdirSync(path.dirname(tempPath), { recursive: true });
       fs.writeFileSync(tempPath, entryData);
 
-      // Recursively process extracted file (depth + 1)
+      // Recursively process extracted file
       const result = await handleFile(tempPath, depth + 1);
       output += `${entry.entryName}:\n${result}\n\n`;
     } catch (err) {
       output += `${entry.entryName}:\n Error processing file: ${err.message}\n\n`;
     } finally {
-      // Cleanup extracted temp file
+      // Cleanup
       if (tempPath && fs.existsSync(tempPath)) {
         try {
           fs.unlinkSync(tempPath);

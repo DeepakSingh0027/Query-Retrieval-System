@@ -135,12 +135,11 @@ async function embedChunks(chunks) {
  * Main controller function for processing documents and questions.
  * Steps:
  *   1. Validate request data.
- *   2. Save incoming docs & questions to file.
- *   3. Extract text from documents.
- *   4. Chunk and embed text for semantic search.
- *   5. Split questions into smaller groups for processing.
- *   6. Find relevant chunks and get answers from model.
- *   7. Save answers and return them in the response.
+ *   2. Extract text from documents.
+ *   3. Chunk and embed text for semantic search.
+ *   4. Split questions into smaller groups for processing.
+ *   5. Find relevant chunks and get answers from model.
+ *   6. return them in the response.
  */
 export const hackrx = async (req, res) => {
   try {
@@ -152,17 +151,6 @@ export const hackrx = async (req, res) => {
         error: "Missing or invalid 'documents' or 'questions' array",
       });
     }
-
-    // File paths for storing logs
-    const questionFilePath = path.join("question.txt");
-    const documentsFilePath = path.join("documents.txt");
-
-    // Append incoming documents to log file
-    await fs.appendFile(
-      documentsFilePath,
-      JSON.stringify(documents, null, 2) + "\n",
-      "utf8"
-    );
 
     console.log("Total questions:", questions.length);
 
@@ -186,13 +174,6 @@ export const hackrx = async (req, res) => {
     const allAnswers = groupedAnswers.flat();
 
     console.log("All answers received:", allAnswers.length);
-
-    // Save questions + answers to file for reference
-    await fs.appendFile(
-      questionFilePath,
-      JSON.stringify({ documents, questions, allAnswers }, null, 2) + "\n",
-      "utf8"
-    );
 
     // Return answers to client
     return res.json({ answers: allAnswers });

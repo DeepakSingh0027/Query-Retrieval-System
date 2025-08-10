@@ -1,5 +1,5 @@
-.env
 node_modules/
 documents.txt
 answer.txt
 question.txt
+/utils/test
