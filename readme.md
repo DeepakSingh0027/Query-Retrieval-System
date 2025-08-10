@@ -77,18 +77,23 @@ brew install --cask libreoffice
 ```
 
 **Windows**
+
+```bash
 -Download from LibreOffice Official Website.:https://www.libreoffice.org/download/download/
 -Add LibreOffice's program folder path (e.g., C:\Program Files\LibreOffice\program) to your system PATH.
+```
 
 ### 5️⃣ Environment Variables
 
 Create a .env file in the server directory:
 (Note: Already pushed.)
+
+```bash
 GITHUB_TOKEN=<your_main_github_api_token>
 GITHUB_TOKEN2=<token_2>
 GITHUB_TOKEN3=<token_3>
-
-# ... up to GITHUB_TOKEN12 if needed
+.. up to GITHUB_TOKEN12 if needed
+```
 
 ### ▶️ Running the Server
 
@@ -99,6 +104,7 @@ node server.js
 
 ### 📂 File Structure
 
+```bash
 server/
 │── server.js # Main entry point
 │── controllers/
@@ -117,9 +123,11 @@ server/
 │── package.json
 │── .env
 (Note: There are more files that supports/helps the main workflow that is not mentioned here.)
+```
 
 ### 📜 Example Workflow
 
+```bash
 1 - User sends API request with:
 documents: array of URLs or file paths
 questions: array of strings
@@ -131,3 +139,4 @@ Finds top relevant chunks per question
 Sends context to LLM
 LLM returns JSON-formatted answers
 All answers were merged and send back with JSON response.
+```
