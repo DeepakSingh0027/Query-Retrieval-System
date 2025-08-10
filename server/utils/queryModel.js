@@ -117,7 +117,7 @@ async function queryModel(context, questions) {
   ]
 }
 
-Do not include anything outside this JSON block.Note: if the accurate answer is not mentioned please answers with relative response.`,
+Do not include anything outside this JSON block.`,
     },
     {
       role: "user",
