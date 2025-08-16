@@ -5,7 +5,7 @@ A powerful **multi-format document question-answering system** that extracts, pr
 ## 🚀 Overview
 
 This system takes **documents** (via URL or file), processes them through a **smart extraction pipeline** (with OCR for scanned content), splits the content into semantic chunks, embeds them into vectors, and retrieves the most relevant chunks for a given question.  
-It then sends the context to an **LLM (GPT-4.1)** to produce accurate, document-based answers.
+It then sends the context to an **LLM (GPT-4.1/GPT-5.1)** to produce accurate, document-based answers.
 
 ## ✨ Key Features
 
